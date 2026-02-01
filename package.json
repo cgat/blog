@@ -11,6 +11,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "better-sqlite3": "^12.6.2",
     "drizzle-orm": "^0.45.1",
     "next": "16.1.6",
@@ -22,29 +23,29 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^5.0.0",
+    "@storybook/addon-a11y": "^10.2.3",
+    "@storybook/addon-docs": "^10.2.3",
+    "@storybook/addon-onboarding": "^10.2.3",
+    "@storybook/addon-vitest": "^10.2.3",
+    "@storybook/nextjs-vite": "^10.2.3",
     "@tailwindcss/postcss": "^4",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
+    "@vitest/browser-playwright": "^4.0.18",
+    "@vitest/coverage-v8": "^4.0.18",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "eslint-plugin-storybook": "^10.2.3",
+    "playwright": "^1.58.1",
+    "storybook": "^10.2.3",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "storybook": "^10.2.3",
-    "@storybook/nextjs-vite": "^10.2.3",
-    "@chromatic-com/storybook": "^5.0.0",
-    "@storybook/addon-vitest": "^10.2.3",
-    "@storybook/addon-a11y": "^10.2.3",
-    "@storybook/addon-docs": "^10.2.3",
-    "@storybook/addon-onboarding": "^10.2.3",
     "vite": "^7.3.1",
-    "eslint-plugin-storybook": "^10.2.3",
-    "vitest": "^4.0.18",
-    "playwright": "^1.58.1",
-    "@vitest/browser-playwright": "^4.0.18",
-    "@vitest/coverage-v8": "^4.0.18"
+    "vitest": "^4.0.18"
   }
 }
