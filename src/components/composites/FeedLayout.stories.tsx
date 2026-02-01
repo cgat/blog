@@ -47,16 +47,16 @@ export const Default: Story = {
     posts: mockPosts,
     hasOlder: true,
     onLoadOlder: () => alert('Loading older posts...'),
-    onPostExpand: (id) => alert(`Expand post ${id}`),
   },
 };
 
-export const WithFocusedPost: Story = {
+export const WithPagination: Story = {
   args: {
     posts: mockPosts,
-    focusedPostId: '2',
     hasNewer: true,
     hasOlder: true,
+    onLoadNewer: () => alert('Loading newer posts...'),
+    onLoadOlder: () => alert('Loading older posts...'),
   },
 };
 

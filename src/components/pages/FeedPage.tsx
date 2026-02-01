@@ -10,11 +10,7 @@ import { ConfirmDialog } from '../composites/ConfirmDialog';
 import { ShareMenu } from '../composites/ShareMenu';
 import { Post, PostTag } from '@/types/post';
 
-interface FeedPageProps {
-  focusedPostId?: string;
-}
-
-export function FeedPage({ focusedPostId }: FeedPageProps) {
+export function FeedPage() {
   const { data: session } = useSession();
   const [posts, setPosts] = useState<Post[]>([]);
   const [tags, setTags] = useState<string[]>([]);
@@ -187,13 +183,11 @@ export function FeedPage({ focusedPostId }: FeedPageProps) {
         ) : (
           <FeedLayout
             posts={posts}
-            focusedPostId={focusedPostId}
             isOwner={!!session}
             hasNewer={hasNewer}
             hasOlder={hasOlder}
             onLoadNewer={handleLoadNewer}
             onLoadOlder={handleLoadOlder}
-            onPostExpand={(id) => window.location.href = `/posts/${id}`}
             onPostEdit={(id) => alert(`Edit ${id} - not implemented`)}
             onPostDelete={setDeletePostId}
             onPostShare={setSharePostId}

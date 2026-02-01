@@ -37,7 +37,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PostPage({ params }: Props) {
-  const { id } = await params;
-  return <FeedPage focusedPostId={id} />;
+export default async function PostPage() {
+  return <FeedPage />;
 }

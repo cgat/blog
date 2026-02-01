@@ -8,9 +8,7 @@ import { IconButton } from '../primitives/IconButton';
 
 interface PostCardProps {
   post: Post;
-  expanded?: boolean;
   isOwner?: boolean;
-  onExpand?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   onShare?: () => void;
@@ -36,9 +34,7 @@ const TrashIcon = () => (
 
 export function PostCard({
   post,
-  expanded = false,
   isOwner = false,
-  onExpand,
   onEdit,
   onDelete,
   onShare,
@@ -52,18 +48,11 @@ export function PostCard({
   }).format(post.createdAt);
 
   return (
-    <article
-      className={`
-        bg-white rounded-xl border border-gray-200 p-6
-        transition-shadow duration-200
-        ${!expanded ? 'hover:shadow-md cursor-pointer' : 'shadow-md'}
-      `}
-      onClick={() => !expanded && onExpand?.()}
-    >
+    <article className="bg-white rounded-xl border border-gray-200 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <time className="text-sm text-gray-500">{formattedDate}</time>
-        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-1">
           <IconButton icon={<ShareIcon />} label="Share" onClick={onShare} />
           {isOwner && (
             <>
@@ -76,16 +65,13 @@ export function PostCard({
 
       {/* Content */}
       <div className="mb-4">
-        <MarkdownRenderer
-          content={post.content}
-          truncate={expanded ? undefined : 280}
-        />
+        <MarkdownRenderer content={post.content} />
       </div>
 
       {/* Images */}
       {post.images.length > 0 && (
         <div className="mb-4">
-          <ImageGrid images={post.images} expanded={expanded} />
+          <ImageGrid images={post.images} expanded />
         </div>
       )}
 

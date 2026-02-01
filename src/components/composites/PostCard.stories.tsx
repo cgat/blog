@@ -67,36 +67,15 @@ export const TextPost: Story = {
   },
 };
 
-export const TextPostExpanded: Story = {
-  args: {
-    post: textPost,
-    expanded: true,
-  },
-};
-
 export const PhotoPost: Story = {
   args: {
     post: photoPost,
   },
 };
 
-export const PhotoPostExpanded: Story = {
-  args: {
-    post: photoPost,
-    expanded: true,
-  },
-};
-
-export const LongPostCollapsed: Story = {
+export const LongPost: Story = {
   args: {
     post: longPost,
-  },
-};
-
-export const LongPostExpanded: Story = {
-  args: {
-    post: longPost,
-    expanded: true,
   },
 };
 

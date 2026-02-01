@@ -6,13 +6,11 @@ import { Button } from '../primitives/Button';
 
 interface FeedLayoutProps {
   posts: Post[];
-  focusedPostId?: string;
   isOwner?: boolean;
   hasNewer?: boolean;
   hasOlder?: boolean;
   onLoadNewer?: () => void;
   onLoadOlder?: () => void;
-  onPostExpand?: (postId: string) => void;
   onPostEdit?: (postId: string) => void;
   onPostDelete?: (postId: string) => void;
   onPostShare?: (postId: string) => void;
@@ -20,13 +18,11 @@ interface FeedLayoutProps {
 
 export function FeedLayout({
   posts,
-  focusedPostId,
   isOwner = false,
   hasNewer = false,
   hasOlder = false,
   onLoadNewer,
   onLoadOlder,
-  onPostExpand,
   onPostEdit,
   onPostDelete,
   onPostShare,
@@ -53,9 +49,7 @@ export function FeedLayout({
         <PostCard
           key={post.id}
           post={post}
-          expanded={post.id === focusedPostId}
           isOwner={isOwner}
-          onExpand={() => onPostExpand?.(post.id)}
           onEdit={() => onPostEdit?.(post.id)}
           onDelete={() => onPostDelete?.(post.id)}
           onShare={() => onPostShare?.(post.id)}
