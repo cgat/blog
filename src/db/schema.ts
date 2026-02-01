@@ -12,7 +12,7 @@ export const posts = sqliteTable('posts', {
 
 export const images = sqliteTable('images', {
   id: text('id').primaryKey(),
-  postId: text('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  postId: text('post_id').references(() => posts.id, { onDelete: 'cascade' }),
   filename: text('filename').notNull(),
   originalFilename: text('original_filename').notNull(),
   width: integer('width').notNull(),

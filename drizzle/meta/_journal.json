@@ -8,6 +8,13 @@
       "when": 1769965840562,
       "tag": "0000_special_shadow_king",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1769987540552,
+      "tag": "0001_messy_energizer",
+      "breakpoints": true
     }
   ]
 }

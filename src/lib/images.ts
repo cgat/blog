@@ -54,7 +54,7 @@ export async function uploadImage(file: File): Promise<ImageMeta> {
   // Save to database (without post_id initially)
   await db.insert(images).values({
     ...imageMeta,
-    postId: '', // Will be updated when post is created
+    postId: null, // Will be updated when post is created
     position: 0,
     createdAt: new Date(),
   });
