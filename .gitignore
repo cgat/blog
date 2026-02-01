@@ -46,6 +46,7 @@ next-env.d.ts
 # SQLite
 *.db
 *.db-journal
+/data/
 
 # IDE
 .idea/
