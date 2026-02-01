@@ -58,3 +58,5 @@ uploads/
 
 # Storybook
 storybook-static/
+
+*storybook.log
