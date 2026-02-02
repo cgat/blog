@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Design System Colors */
+:root {
+  --sky-blue: #8ecae6;
+  --blue-green: #219ebc;
+  --deep-space: #023047;
+  --amber-flame: #ffb703;
+  --princeton-orange: #fb8500;
+}
+
+@theme inline {
+  /* Colors */
+  --color-sky-blue: var(--sky-blue);
+  --color-blue-green: var(--blue-green);
+  --color-deep-space: var(--deep-space);
+  --color-amber-flame: var(--amber-flame);
+  --color-princeton-orange: var(--princeton-orange);
+
+  /* Typography */
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: #ffffff;
+  color: var(--deep-space);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
