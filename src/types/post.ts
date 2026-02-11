@@ -12,12 +12,21 @@ export interface PostTag {
   slug: string;
 }
 
+export interface LinkPreviewData {
+  url: string;
+  title: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  domain: string;
+}
+
 export interface Post {
   id: string;
   content: string;
   type: 'text' | 'photo';
   images: PostImage[];
   tags: PostTag[];
+  linkPreviews: Record<string, LinkPreviewData>;
   createdAt: Date;
   publishedAt: Date | null;
 }

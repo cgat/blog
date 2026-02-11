@@ -2,6 +2,7 @@ import { db } from '@/db';
 import { posts, images, postTags } from '@/db/schema';
 import { eq, desc, lt, gt, and } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
+import { extractBareUrls, getLinkPreviewsForUrls, processPostLinkPreviews } from '@/lib/link-previews';
 
 export interface CreatePostInput {
   content: string;
@@ -26,6 +27,7 @@ export interface PostWithRelations {
     name: string;
     slug: string;
   }[];
+  linkPreviews: Record<string, { url: string; title: string | null; description: string | null; imageUrl: string | null; domain: string }>;
 }
 
 export async function createPost(input: CreatePostInput, imageIds: string[] = []): Promise<PostWithRelations> {
@@ -58,6 +60,9 @@ export async function createPost(input: CreatePostInput, imageIds: string[] = []
     }
   }
 
+  // Scrape link previews for any bare URLs in the content
+  await processPostLinkPreviews(input.content);
+
   return getPost(id) as Promise<PostWithRelations>;
 }
 
@@ -75,6 +80,9 @@ export async function getPost(id: string): Promise<PostWithRelations | null> {
   });
 
   if (!result) return null;
+
+  const urls = extractBareUrls(result.content);
+  const linkPreviewData = await getLinkPreviewsForUrls(urls);
 
   return {
     id: result.id,
@@ -94,6 +102,7 @@ export async function getPost(id: string): Promise<PostWithRelations | null> {
       name: pt.tag.name,
       slug: pt.tag.slug,
     })),
+    linkPreviews: linkPreviewData,
   };
 }
 
@@ -145,26 +154,41 @@ export async function getPosts(options: {
     postsToReturn.reverse();
   }
 
+  // Batch-fetch link previews for all posts
+  const allUrls = postsToReturn.flatMap((result) => extractBareUrls(result.content));
+  const linkPreviewData = await getLinkPreviewsForUrls([...new Set(allUrls)]);
+
   return {
-    posts: postsToReturn.map((result) => ({
-      id: result.id,
-      content: result.content,
-      type: result.type,
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
-      publishedAt: result.publishedAt,
-      images: result.images.map((img) => ({
-        id: img.id,
-        url: `/api/images/${img.filename}`,
-        width: img.width,
-        height: img.height,
-      })),
-      tags: result.postTags.map((pt) => ({
-        id: pt.tag.id,
-        name: pt.tag.name,
-        slug: pt.tag.slug,
-      })),
-    })),
+    posts: postsToReturn.map((result) => {
+      const postUrls = extractBareUrls(result.content);
+      const postPreviews: Record<string, { url: string; title: string | null; description: string | null; imageUrl: string | null; domain: string }> = {};
+      for (const url of postUrls) {
+        if (linkPreviewData[url]) {
+          postPreviews[url] = linkPreviewData[url];
+        }
+      }
+
+      return {
+        id: result.id,
+        content: result.content,
+        type: result.type,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        publishedAt: result.publishedAt,
+        images: result.images.map((img) => ({
+          id: img.id,
+          url: `/api/images/${img.filename}`,
+          width: img.width,
+          height: img.height,
+        })),
+        tags: result.postTags.map((pt) => ({
+          id: pt.tag.id,
+          name: pt.tag.name,
+          slug: pt.tag.slug,
+        })),
+        linkPreviews: postPreviews,
+      };
+    }),
     hasMore,
   };
 }
@@ -188,6 +212,10 @@ export async function updatePost(id: string, input: Partial<CreatePostInput>): P
         input.tagIds.map((tagId) => ({ postId: id, tagId }))
       );
     }
+  }
+
+  if (input.content) {
+    await processPostLinkPreviews(input.content);
   }
 
   return getPost(id);

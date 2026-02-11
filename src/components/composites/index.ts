@@ -7,3 +7,4 @@ export { FilterBar } from './FilterBar';
 export { ShareMenu } from './ShareMenu';
 export { ConfirmDialog } from './ConfirmDialog';
 export { FeedLayout } from './FeedLayout';
+export { LinkPreview } from './LinkPreview';

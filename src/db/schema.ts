@@ -61,3 +61,13 @@ export const postTagsRelations = relations(postTags, ({ one }) => ({
     references: [tags.id],
   }),
 }));
+
+export const linkPreviews = sqliteTable('link_previews', {
+  id: text('id').primaryKey(),
+  url: text('url').notNull().unique(),
+  title: text('title'),
+  description: text('description'),
+  imageUrl: text('image_url'),
+  domain: text('domain').notNull(),
+  scrapedAt: integer('scraped_at', { mode: 'timestamp' }).notNull(),
+});

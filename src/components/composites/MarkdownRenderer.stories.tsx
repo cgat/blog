@@ -43,3 +43,56 @@ export const Truncated: Story = {
     truncate: 50,
   },
 };
+
+export const WithLinkPreview: Story = {
+  args: {
+    content: `Check out this article:
+
+https://example.com/blog/nextjs-guide
+
+It really helped me understand the App Router.`,
+    linkPreviews: {
+      'https://example.com/blog/nextjs-guide': {
+        url: 'https://example.com/blog/nextjs-guide',
+        title: 'The Complete Guide to Next.js App Router',
+        description: 'Learn everything about the new App Router in Next.js, including server components, layouts, and data fetching patterns.',
+        imageUrl: 'https://picsum.photos/800/400',
+        domain: 'example.com',
+      },
+    },
+  },
+};
+
+export const WithLinkPreviewNoImage: Story = {
+  args: {
+    content: `https://example.com/article`,
+    linkPreviews: {
+      'https://example.com/article': {
+        url: 'https://example.com/article',
+        title: 'An Interesting Article',
+        description: 'This article has no OG image, so it renders as a text-only card.',
+        imageUrl: null,
+        domain: 'example.com',
+      },
+    },
+  },
+};
+
+export const WithInlineAndBareLinks: Story = {
+  args: {
+    content: `I found [this resource](https://example.com/inline) very helpful.
+
+https://example.com/bare-url
+
+The inline link above should remain a normal link, while the bare URL gets a preview card.`,
+    linkPreviews: {
+      'https://example.com/bare-url': {
+        url: 'https://example.com/bare-url',
+        title: 'Bare URL Gets a Preview',
+        description: 'Only bare URLs on their own line get preview cards.',
+        imageUrl: 'https://picsum.photos/800/400',
+        domain: 'example.com',
+      },
+    },
+  },
+};

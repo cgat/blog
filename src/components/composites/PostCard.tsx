@@ -65,7 +65,7 @@ export function PostCard({
 
       {/* Content */}
       <div className="mb-4">
-        <MarkdownRenderer content={post.content} />
+        <MarkdownRenderer content={post.content} linkPreviews={post.linkPreviews} />
       </div>
 
       {/* Images */}
