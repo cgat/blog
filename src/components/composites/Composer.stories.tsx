@@ -52,3 +52,21 @@ export const EmptyState: Story = {
     },
   },
 };
+
+export const WithContentSources: Story = {
+  args: {
+    userName: 'John Doe',
+    existingTags: ['travel', 'photography', 'Movie Review'],
+    onPublish: (data) => {
+      console.log('Publishing:', data);
+      alert(`Publishing:\n${JSON.stringify(data, null, 2)}`);
+    },
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Composer with content source buttons (Movie). Click the Movie button to reveal the search input.',
+      },
+    },
+  },
+};

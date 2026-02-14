@@ -5,12 +5,14 @@ import { Avatar } from '../primitives/Avatar';
 import { Button } from '../primitives/Button';
 import { Chip } from '../primitives/Chip';
 import { MarkdownEditor } from './MarkdownEditor';
+import { contentSources } from '@/lib/content-sources';
+import type { ContentSource, SearchResult } from '@/lib/content-sources';
 
 interface ComposerProps {
   userAvatar?: string;
   userName?: string;
   existingTags?: string[];
-  onPublish: (data: { content: string; images: File[]; tags: string[] }) => void;
+  onPublish: (data: { content: string; images: File[]; tags: string[] }) => void | Promise<void>;
   isSubmitting?: boolean;
 }
 
@@ -19,6 +21,29 @@ const PhotoIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>
 );
+
+const FilmIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+  </svg>
+);
+
+const BookIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+  </svg>
+);
+
+const SparkleIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+  </svg>
+);
+
+const sourceIcons: Record<string, () => React.ReactElement> = {
+  'movie-review': FilmIcon,
+  'book-review': BookIcon,
+};
 
 export function Composer({
   userAvatar,
@@ -34,6 +59,13 @@ export function Composer({
   const [newTag, setNewTag] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Content search state
+  const [activeSource, setActiveSource] = useState<ContentSource | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -68,13 +100,76 @@ export function Composer({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!content.trim() && images.length === 0) return;
-    onPublish({ content, images, tags: selectedTags });
+    await onPublish({ content, images, tags: selectedTags });
     setContent('');
     setImages([]);
     setImagePreviews([]);
     setSelectedTags([]);
+    setActiveSource(null);
+    setSearchQuery('');
+    setSearchResults([]);
+    setHasSearched(false);
+  };
+
+  const toggleSource = (source: ContentSource) => {
+    if (activeSource?.id === source.id) {
+      setActiveSource(null);
+      setSearchQuery('');
+      setSearchResults([]);
+      setHasSearched(false);
+    } else {
+      setActiveSource(source);
+      setSearchQuery('');
+      setSearchResults([]);
+      setHasSearched(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!activeSource || !searchQuery.trim()) return;
+
+    setIsSearching(true);
+    setHasSearched(false);
+    try {
+      const res = await fetch('/api/content-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceId: activeSource.id,
+          query: searchQuery.trim(),
+        }),
+      });
+      const data = await res.json();
+      setSearchResults(data.results || []);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+      setHasSearched(true);
+    }
+  };
+
+  const handleSelectResult = (result: SearchResult) => {
+    if (!activeSource) return;
+
+    // Prepend URL to content
+    const newContent = content.trim()
+      ? `${result.url}\n\n${content}`
+      : result.url;
+    setContent(newContent);
+
+    // Add the source tag
+    if (!selectedTags.includes(activeSource.tag)) {
+      setSelectedTags((prev) => [...prev, activeSource.tag]);
+    }
+
+    // Reset search state
+    setActiveSource(null);
+    setSearchQuery('');
+    setSearchResults([]);
+    setHasSearched(false);
   };
 
   const canPublish = (content.trim() || images.length > 0) && !isSubmitting;
@@ -118,6 +213,73 @@ export function Composer({
           >
             +
           </button>
+        </div>
+      )}
+
+      {/* Content Search */}
+      {activeSource && (
+        <div className="mb-4 ml-14">
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              placeholder={`Search for a ${activeSource.label.toLowerCase()}...`}
+              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-green"
+              autoFocus
+            />
+            <button
+              onClick={handleSearch}
+              disabled={isSearching || !searchQuery.trim()}
+              className="p-2 text-amber-flame hover:text-princeton-orange disabled:text-gray-300 transition-colors"
+              title="Search"
+            >
+              {isSearching ? (
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <SparkleIcon />
+              )}
+            </button>
+            <button
+              onClick={() => {
+                setActiveSource(null);
+                setSearchQuery('');
+                setSearchResults([]);
+                setHasSearched(false);
+              }}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              title="Cancel"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Search Results */}
+          {searchResults.length > 0 && (
+            <div className="mt-2 border border-gray-200 rounded-lg overflow-hidden">
+              {searchResults.map((result, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSelectResult(result)}
+                  className="w-full text-left px-3 py-2 hover:bg-sky-blue/10 transition-colors border-b border-gray-100 last:border-b-0"
+                >
+                  <p className="text-sm font-medium text-deep-space truncate">{result.title}</p>
+                  <p className="text-xs text-gray-400 truncate">{result.url}</p>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* No results */}
+          {hasSearched && searchResults.length === 0 && (
+            <p className="mt-2 text-sm text-gray-400">No results found. Try a different search.</p>
+          )}
         </div>
       )}
 
@@ -180,13 +342,32 @@ export function Composer({
 
       {/* Actions */}
       <div className="flex items-center justify-between ml-14">
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 text-gray-500 hover:text-blue-green transition-colors"
-        >
-          <PhotoIcon />
-          <span className="text-sm">Photo</span>
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 text-gray-500 hover:text-blue-green transition-colors"
+          >
+            <PhotoIcon />
+            <span className="text-sm">Photo</span>
+          </button>
+          {contentSources.map((source) => {
+            const Icon = sourceIcons[source.id] || FilmIcon;
+            return (
+              <button
+                key={source.id}
+                onClick={() => toggleSource(source)}
+                className={`flex items-center gap-2 transition-colors ${
+                  activeSource?.id === source.id
+                    ? 'text-blue-green'
+                    : 'text-gray-500 hover:text-blue-green'
+                }`}
+              >
+                <Icon />
+                <span className="text-sm">{source.label}</span>
+              </button>
+            );
+          })}
+        </div>
         <input
           ref={fileInputRef}
           type="file"

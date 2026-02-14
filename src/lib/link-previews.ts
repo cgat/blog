@@ -19,7 +19,7 @@ export async function scrapeMetadata(url: string): Promise<ScrapedMetadata | nul
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; BlogBot/1.0)',
+        'User-Agent': 'facebookexternalhit/1.1',
       },
       redirect: 'follow',
     });

@@ -19,6 +19,7 @@ src/
 ├── app/                    # Next.js App Router
 │   ├── api/
 │   │   ├── auth/          # NextAuth endpoints
+│   │   ├── content-search/# Google CSE proxy for content sources
 │   │   ├── images/        # Image upload and serving
 │   │   ├── posts/         # CRUD for posts
 │   │   └── tags/          # Tag management
@@ -36,7 +37,9 @@ src/
 │   └── schema.ts          # Drizzle schema definitions
 ├── lib/                   # Business logic
 │   ├── auth.ts            # Auth utilities
+│   ├── content-sources.ts # Content source definitions (Movie, Book, etc.)
 │   ├── images.ts          # Image processing
+│   ├── link-previews.ts   # OG/Twitter scraping, URL extraction, DB ops
 │   ├── posts.ts           # Post CRUD operations
 │   └── tags.ts            # Tag operations
 ├── types/                 # TypeScript type definitions
@@ -62,6 +65,7 @@ SQLite database stored at `data/blog.db`. Schema:
 - **images**: id, postId (nullable), filename, dimensions, metadata
 - **tags**: id, name, slug
 - **post_tags**: many-to-many join table
+- **link_previews**: url (unique), title, description, imageUrl, domain, scrapedAt — stores OG/Twitter metadata scraped at publish time, keyed by URL, reused across posts
 
 Images are stored in `uploads/` directory and served via `/api/images/[filename]`.
 
@@ -70,11 +74,12 @@ Images are stored in `uploads/` directory and served via `/api/images/[filename]
 Copy `.env.local.example` to `.env.local` and configure:
 
 ```
-GOOGLE_CLIENT_ID=        # From Google Cloud Console
-GOOGLE_CLIENT_SECRET=    # From Google Cloud Console
+GOOGLE_CLIENT_ID=        # From Google Cloud Console (OAuth)
+GOOGLE_CLIENT_SECRET=    # From Google Cloud Console (OAuth)
 AUTH_SECRET=             # Generate with: openssl rand -base64 32
 NEXTAUTH_URL=            # http://localhost:3000 for local dev
 ALLOWED_EMAIL=           # Your email (only this user can post)
+ANTHROPIC_API_KEY=       # Anthropic API key (for content search via Claude web search)
 ```
 
 ## Design Decisions
@@ -83,6 +88,8 @@ ALLOWED_EMAIL=           # Your email (only this user can post)
 - **Storybook-first**: All components have stories. Run Storybook to develop/test components in isolation.
 - **Single user**: Only one authorized email can create/edit/delete posts. Everyone else can view.
 - **Local storage**: Images stored on filesystem, not cloud. Simple self-hosted setup.
+- **Link previews**: Bare URLs on their own line in post content are scraped for OG/Twitter metadata at publish time (using cheerio) and rendered as rich preview cards inline. Data stored in `link_previews` table, keyed by URL. The `MarkdownRenderer` detects bare-URL paragraphs via the `p` component override in react-markdown and replaces them with `LinkPreview` cards.
+- **Content sources**: Extensible system for searching external sites via Claude web search. Sources defined in `src/lib/content-sources.ts` as a simple array (id, label, tag, site). Search powered by Anthropic API with `web_search_20250305` tool, scoped to each source's domain via `allowed_domains`. The Composer renders a toolbar button per source. Search results shown in a dropdown; selecting one prepends the URL to post content and auto-tags the post. To add a new source: add entry to `contentSources` array with the target `site` domain.
 
 ## Color Palette
 
@@ -96,6 +103,10 @@ Defined in `src/app/globals.css` using Tailwind CSS 4 `@theme inline`:
 ## Git Worktrees
 
 This project uses `.worktrees/` for feature development. The directory is gitignored.
+
+## Deployment
+
+Deployed on Hetzner via Coolify.
 
 ## Common Issues
 
