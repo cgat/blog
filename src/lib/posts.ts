@@ -7,12 +7,14 @@ import { extractBareUrls, getLinkPreviewsForUrls, processPostLinkPreviews } from
 export interface CreatePostInput {
   content: string;
   tagIds?: string[];
+  isPrivate?: boolean;
 }
 
 export interface PostWithRelations {
   id: string;
   content: string;
   type: 'text' | 'photo';
+  isPrivate: boolean;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -42,6 +44,7 @@ export async function createPost(input: CreatePostInput, imageIds: string[] = []
     createdAt: now,
     updatedAt: now,
     publishedAt: now,
+    isPrivate: input.isPrivate ?? false,
   });
 
   // Link tags
@@ -63,12 +66,18 @@ export async function createPost(input: CreatePostInput, imageIds: string[] = []
   // Scrape link previews for any bare URLs in the content
   await processPostLinkPreviews(input.content);
 
-  return getPost(id) as Promise<PostWithRelations>;
+  return getPost(id, { includePrivate: true }) as Promise<PostWithRelations>;
 }
 
-export async function getPost(id: string): Promise<PostWithRelations | null> {
+export async function getPost(id: string, options?: { includePrivate?: boolean }): Promise<PostWithRelations | null> {
+  const includePrivate = options?.includePrivate ?? false;
+  const whereConditions = [eq(posts.id, id)];
+  if (!includePrivate) {
+    whereConditions.push(eq(posts.isPrivate, false));
+  }
+
   const result = await db.query.posts.findFirst({
-    where: eq(posts.id, id),
+    where: and(...whereConditions),
     with: {
       images: true,
       postTags: {
@@ -88,6 +97,7 @@ export async function getPost(id: string): Promise<PostWithRelations | null> {
     id: result.id,
     content: result.content,
     type: result.type,
+    isPrivate: result.isPrivate,
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
     publishedAt: result.publishedAt,
@@ -111,10 +121,15 @@ export async function getPosts(options: {
   cursor?: Date;
   direction?: 'older' | 'newer';
   tagSlugs?: string[];
+  includePrivate?: boolean;
 }): Promise<{ posts: PostWithRelations[]; hasMore: boolean }> {
-  const { limit = 20, cursor, direction = 'older', tagSlugs } = options;
+  const { limit = 20, cursor, direction = 'older', tagSlugs, includePrivate = false } = options;
 
   const whereConditions = [];
+
+  if (!includePrivate) {
+    whereConditions.push(eq(posts.isPrivate, false));
+  }
 
   if (cursor) {
     whereConditions.push(
@@ -172,6 +187,7 @@ export async function getPosts(options: {
         id: result.id,
         content: result.content,
         type: result.type,
+        isPrivate: result.isPrivate,
         createdAt: result.createdAt,
         updatedAt: result.updatedAt,
         publishedAt: result.publishedAt,
@@ -194,14 +210,15 @@ export async function getPosts(options: {
 }
 
 export async function updatePost(id: string, input: Partial<CreatePostInput>): Promise<PostWithRelations | null> {
-  const existing = await getPost(id);
+  const existing = await getPost(id, { includePrivate: true });
   if (!existing) return null;
 
+  const updateFields: Record<string, unknown> = { updatedAt: new Date() };
+  if (input.content !== undefined) updateFields.content = input.content;
+  if (input.isPrivate !== undefined) updateFields.isPrivate = input.isPrivate;
+
   await db.update(posts)
-    .set({
-      content: input.content,
-      updatedAt: new Date(),
-    })
+    .set(updateFields)
     .where(eq(posts.id, id));
 
   // Update tags if provided
@@ -218,7 +235,7 @@ export async function updatePost(id: string, input: Partial<CreatePostInput>): P
     await processPostLinkPreviews(input.content);
   }
 
-  return getPost(id);
+  return getPost(id, { includePrivate: true });
 }
 
 export async function deletePost(id: string): Promise<boolean> {

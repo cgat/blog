@@ -52,6 +52,12 @@ export function Header({ blogName = 'My Blog' }: HeaderProps) {
 
             {showDropdown && (
               <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[150px]">
+                <a
+                  href="/private"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  Private feed
+                </a>
                 <button
                   onClick={() => signOut()}
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"

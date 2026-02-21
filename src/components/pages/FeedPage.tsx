@@ -10,7 +10,11 @@ import { ConfirmDialog } from '../composites/ConfirmDialog';
 import { ShareMenu } from '../composites/ShareMenu';
 import { Post, PostTag } from '@/types/post';
 
-export function FeedPage() {
+interface FeedPageProps {
+  includePrivate?: boolean;
+}
+
+export function FeedPage({ includePrivate = false }: FeedPageProps) {
   const { data: session } = useSession();
   const [posts, setPosts] = useState<Post[]>([]);
   const [tags, setTags] = useState<string[]>([]);
@@ -28,12 +32,13 @@ export function FeedPage() {
     if (cursor) params.set('cursor', cursor.toISOString());
     params.set('direction', direction);
     if (selectedTags.length > 0) params.set('tags', selectedTags.join(','));
+    if (includePrivate) params.set('includePrivate', 'true');
 
     const res = await fetch(`/api/posts?${params}`);
     const data = await res.json();
 
     return data;
-  }, [selectedTags]);
+  }, [selectedTags, includePrivate]);
 
   const fetchTags = async () => {
     const res = await fetch('/api/tags');
@@ -60,7 +65,7 @@ export function FeedPage() {
     loadInitial();
   }, [fetchPosts]);
 
-  const handlePublish = async (data: { content: string; images: File[]; tags: string[] }) => {
+  const handlePublish = async (data: { content: string; images: File[]; tags: string[]; isPrivate: boolean }) => {
     setIsSubmitting(true);
 
     try {
@@ -94,6 +99,7 @@ export function FeedPage() {
           content: data.content,
           imageIds,
           tagIds,
+          isPrivate: data.isPrivate,
         }),
       });
 

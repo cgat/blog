@@ -27,6 +27,7 @@ export interface Post {
   images: PostImage[];
   tags: PostTag[];
   linkPreviews: Record<string, LinkPreviewData>;
+  isPrivate: boolean;
   createdAt: Date;
   publishedAt: Date | null;
 }

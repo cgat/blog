@@ -12,7 +12,7 @@ interface ComposerProps {
   userAvatar?: string;
   userName?: string;
   existingTags?: string[];
-  onPublish: (data: { content: string; images: File[]; tags: string[] }) => void | Promise<void>;
+  onPublish: (data: { content: string; images: File[]; tags: string[]; isPrivate: boolean }) => void | Promise<void>;
   isSubmitting?: boolean;
 }
 
@@ -40,6 +40,18 @@ const SparkleIcon = () => (
   </svg>
 );
 
+const LockIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+  </svg>
+);
+
+const GlobeIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
 const sourceIcons: Record<string, () => React.ReactElement> = {
   'movie-review': FilmIcon,
   'book-review': BookIcon,
@@ -53,6 +65,7 @@ export function Composer({
   isSubmitting = false,
 }: ComposerProps) {
   const [content, setContent] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -102,8 +115,9 @@ export function Composer({
 
   const handleSubmit = async () => {
     if (!content.trim() && images.length === 0) return;
-    await onPublish({ content, images, tags: selectedTags });
+    await onPublish({ content, images, tags: selectedTags, isPrivate });
     setContent('');
+    setIsPrivate(false);
     setImages([]);
     setImagePreviews([]);
     setSelectedTags([]);
@@ -376,12 +390,26 @@ export function Composer({
           onChange={handleImageSelect}
           className="hidden"
         />
-        <Button
-          onClick={handleSubmit}
-          disabled={!canPublish}
-        >
-          {isSubmitting ? 'Publishing...' : 'Publish'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsPrivate(!isPrivate)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              isPrivate
+                ? 'text-amber-flame bg-amber-flame/10'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+            title={isPrivate ? 'Private — only visible when logged in' : 'Public — visible to everyone'}
+          >
+            {isPrivate ? <LockIcon /> : <GlobeIcon />}
+            <span>{isPrivate ? 'Private' : 'Public'}</span>
+          </button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!canPublish}
+          >
+            {isSubmitting ? 'Publishing...' : isPrivate ? 'Post Privately' : 'Publish'}
+          </Button>
+        </div>
       </div>
     </div>
   );

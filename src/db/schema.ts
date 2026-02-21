@@ -8,6 +8,7 @@ export const posts = sqliteTable('posts', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   publishedAt: integer('published_at', { mode: 'timestamp' }),
+  isPrivate: integer('is_private', { mode: 'boolean' }).notNull().default(false),
 });
 
 export const images = sqliteTable('images', {

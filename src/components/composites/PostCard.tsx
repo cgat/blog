@@ -51,7 +51,17 @@ export function PostCard({
     <article className="bg-white rounded-xl border border-gray-200 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <time className="text-sm text-gray-500">{formattedDate}</time>
+        <div className="flex items-center gap-2">
+          <time className="text-sm text-gray-500">{formattedDate}</time>
+          {post.isPrivate && (
+            <span className="flex items-center gap-1 text-xs text-amber-flame">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              Private
+            </span>
+          )}
+        </div>
         <div className="flex gap-1">
           <IconButton icon={<ShareIcon />} label="Share" onClick={onShare} />
           {isOwner && (
