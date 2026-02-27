@@ -2,8 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { TextArea } from "./TextArea";
 
 const meta: Meta<typeof TextArea> = {
-  title: "Primitives/TextArea",
+  title: "The Props/TextArea",
   component: TextArea,
+  parameters: {
+    docs: {
+      description: {
+        component: "Fig 1.2: The Extended Data Receiver. A multi-line receptacle for longer-form textual input. Features optional automatic vertical expansion, not unlike an accordion in a lobby orchestra.",
+      },
+    },
+  },
 };
 
 export default meta;

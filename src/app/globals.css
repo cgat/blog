@@ -1,29 +1,83 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Design System Colors */
+/* The Zissou Protocol — Design Tokens */
 :root {
-  --sky-blue: #8ecae6;
-  --blue-green: #219ebc;
-  --deep-space: #023047;
-  --amber-flame: #ffb703;
-  --princeton-orange: #fb8500;
+  --cream: #fdf5e6;
+  --mendls-pink: #f0a0a0;
+  --tracksuit-red: #c0392b;
+  --submarine-yellow: #e6cc57;
+  --deep-ocean-teal: #4682b4;
+  --inkstain: #2c2c2c;
 }
 
 @theme inline {
   /* Colors */
-  --color-sky-blue: var(--sky-blue);
-  --color-blue-green: var(--blue-green);
-  --color-deep-space: var(--deep-space);
-  --color-amber-flame: var(--amber-flame);
-  --color-princeton-orange: var(--princeton-orange);
+  --color-cream: var(--cream);
+  --color-mendls-pink: var(--mendls-pink);
+  --color-tracksuit-red: var(--tracksuit-red);
+  --color-submarine-yellow: var(--submarine-yellow);
+  --color-deep-ocean-teal: var(--deep-ocean-teal);
+  --color-inkstain: var(--inkstain);
 
   /* Typography */
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-jost);
+  --font-serif: var(--font-lora);
+  --font-mono: var(--font-courier-prime);
 }
 
 body {
-  background: #ffffff;
-  color: var(--deep-space);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  background: var(--cream);
+  color: var(--inkstain);
+  font-family: var(--font-serif), "Lora", serif;
+}
+
+/* Utility Classes */
+.zissou-border {
+  border: 2px solid var(--inkstain);
+}
+
+.zissou-heading {
+  font-family: var(--font-sans), "Jost", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.zissou-mono {
+  font-family: var(--font-mono), "Courier Prime", monospace;
+}
+
+.zissou-shadow {
+  box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* Prose overrides for Zissou typography */
+.prose {
+  font-family: var(--font-serif), "Lora", serif;
+  color: var(--inkstain);
+}
+
+.prose :where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-sans), "Jost", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--inkstain);
+}
+
+.prose :where(a) {
+  color: var(--deep-ocean-teal);
+  text-decoration-thickness: 2px;
+}
+
+.prose :where(a:hover) {
+  color: var(--tracksuit-red);
+}
+
+.prose :where(code) {
+  font-family: var(--font-mono), "Courier Prime", monospace;
+}
+
+.prose :where(blockquote) {
+  border-left: 4px solid var(--submarine-yellow);
+  color: var(--inkstain);
 }

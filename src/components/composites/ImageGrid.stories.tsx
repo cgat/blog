@@ -2,8 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { ImageGrid } from "./ImageGrid";
 
 const meta: Meta<typeof ImageGrid> = {
-  title: "Composites/ImageGrid",
+  title: "The Dioramas/ImageGrid",
   component: ImageGrid,
+  parameters: {
+    docs: {
+      description: {
+        component: 'Fig 2.3: The Photographic Evidence Grid. Displays one to four images in a measured grid formation. Additional images beyond four are noted with a count overlay, filed but not immediately visible.',
+      },
+    },
+  },
 };
 
 export default meta;

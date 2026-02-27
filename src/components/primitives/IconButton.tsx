@@ -11,8 +11,8 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<IconButtonVariant, string> = {
-  default: 'text-gray-500 hover:text-deep-space hover:bg-gray-100',
-  danger: 'text-gray-500 hover:text-princeton-orange hover:bg-red-50',
+  default: 'text-inkstain/60 hover:text-inkstain hover:bg-submarine-yellow/30',
+  danger: 'text-inkstain/60 hover:text-white hover:bg-tracksuit-red',
 };
 
 const sizeStyles: Record<IconButtonSize, string> = {
@@ -30,9 +30,9 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         title={label}
         className={`
           inline-flex items-center justify-center
-          rounded-lg transition-colors duration-200
-          focus:outline-none focus:ring-2 focus:ring-blue-green focus:ring-offset-1
-          disabled:opacity-50 disabled:cursor-not-allowed
+          zissou-border transition-none
+          focus:outline-none focus:ring-2 focus:ring-deep-ocean-teal focus:ring-offset-1
+          disabled:cursor-not-allowed disabled:border-dashed
           ${variantStyles[variant]}
           ${sizeStyles[size]}
           ${className}

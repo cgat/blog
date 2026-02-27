@@ -62,18 +62,18 @@ export function ShareMenu({ postUrl, postTitle, isOpen, onClose }: ShareMenuProp
   return (
     <div
       ref={menuRef}
-      className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[200px]"
+      className="absolute right-0 top-full mt-2 bg-cream zissou-border zissou-shadow py-2 z-50 min-w-[200px]"
     >
       <button
         onClick={shareToFacebook}
-        className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-50 text-deep-space"
+        className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-submarine-yellow/30 text-inkstain zissou-mono text-sm transition-none"
       >
         <FacebookIcon />
         <span>Share to Facebook</span>
       </button>
       <button
         onClick={copyLink}
-        className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-50 text-deep-space"
+        className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-submarine-yellow/30 text-inkstain zissou-mono text-sm transition-none"
       >
         <CopyIcon />
         <span>Copy link</span>

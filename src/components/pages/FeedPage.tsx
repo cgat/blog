@@ -1,14 +1,13 @@
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
-import { useState, useEffect, useCallback } from 'react';
-import { Header } from '../layout/Header';
-import { Composer } from '../composites/Composer';
-import { FilterBar } from '../composites/FilterBar';
-import { FeedLayout } from '../composites/FeedLayout';
-import { ConfirmDialog } from '../composites/ConfirmDialog';
-import { ShareMenu } from '../composites/ShareMenu';
-import { Post, PostTag } from '@/types/post';
+import { useSession } from "next-auth/react";
+import { useState, useEffect, useCallback } from "react";
+import { Header } from "../layout/Header";
+import { Composer } from "../composites/Composer";
+import { FeedLayout } from "../composites/FeedLayout";
+import { ConfirmDialog } from "../composites/ConfirmDialog";
+import { ShareMenu } from "../composites/ShareMenu";
+import { Post, PostTag } from "@/types/post";
 
 interface FeedPageProps {
   includePrivate?: boolean;
@@ -26,22 +25,25 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [sharePostId, setSharePostId] = useState<string | null>(null);
 
-  const fetchPosts = useCallback(async (cursor?: Date, direction: 'older' | 'newer' = 'older') => {
-    const params = new URLSearchParams();
-    params.set('limit', '20');
-    if (cursor) params.set('cursor', cursor.toISOString());
-    params.set('direction', direction);
-    if (selectedTags.length > 0) params.set('tags', selectedTags.join(','));
-    if (includePrivate) params.set('includePrivate', 'true');
+  const fetchPosts = useCallback(
+    async (cursor?: Date, direction: "older" | "newer" = "older") => {
+      const params = new URLSearchParams();
+      params.set("limit", "20");
+      if (cursor) params.set("cursor", cursor.toISOString());
+      params.set("direction", direction);
+      if (selectedTags.length > 0) params.set("tags", selectedTags.join(","));
+      if (includePrivate) params.set("includePrivate", "true");
 
-    const res = await fetch(`/api/posts?${params}`);
-    const data = await res.json();
+      const res = await fetch(`/api/posts?${params}`);
+      const data = await res.json();
 
-    return data;
-  }, [selectedTags, includePrivate]);
+      return data;
+    },
+    [selectedTags, includePrivate],
+  );
 
   const fetchTags = async () => {
-    const res = await fetch('/api/tags');
+    const res = await fetch("/api/tags");
     const data = await res.json();
     setTags(data.map((t: PostTag) => t.name));
   };
@@ -49,15 +51,14 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
   useEffect(() => {
     const loadInitial = async () => {
       setIsLoading(true);
-      const [postsData] = await Promise.all([
-        fetchPosts(),
-        fetchTags(),
-      ]);
-      setPosts(postsData.posts.map((p: Post) => ({
-        ...p,
-        createdAt: new Date(p.createdAt),
-        publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
-      })));
+      const [postsData] = await Promise.all([fetchPosts(), fetchTags()]);
+      setPosts(
+        postsData.posts.map((p: Post) => ({
+          ...p,
+          createdAt: new Date(p.createdAt),
+          publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
+        })),
+      );
       setHasOlder(postsData.hasMore);
       setIsLoading(false);
     };
@@ -65,7 +66,12 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     loadInitial();
   }, [fetchPosts]);
 
-  const handlePublish = async (data: { content: string; images: File[]; tags: string[]; isPrivate: boolean }) => {
+  const handlePublish = async (data: {
+    content: string;
+    images: File[];
+    tags: string[];
+    isPrivate: boolean;
+  }) => {
     setIsSubmitting(true);
 
     try {
@@ -73,8 +79,11 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
       const imageIds: string[] = [];
       for (const file of data.images) {
         const formData = new FormData();
-        formData.append('file', file);
-        const res = await fetch('/api/images', { method: 'POST', body: formData });
+        formData.append("file", file);
+        const res = await fetch("/api/images", {
+          method: "POST",
+          body: formData,
+        });
         const imageData = await res.json();
         imageIds.push(imageData.id);
       }
@@ -82,9 +91,9 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
       // Create tags and get IDs
       const tagIds: string[] = [];
       for (const tagName of data.tags) {
-        const res = await fetch('/api/tags', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/tags", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: tagName }),
         });
         const tagData = await res.json();
@@ -92,9 +101,9 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
       }
 
       // Create post
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: data.content,
           imageIds,
@@ -104,11 +113,16 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
       });
 
       const newPost = await res.json();
-      setPosts((prev) => [{
-        ...newPost,
-        createdAt: new Date(newPost.createdAt),
-        publishedAt: newPost.publishedAt ? new Date(newPost.publishedAt) : null,
-      }, ...prev]);
+      setPosts((prev) => [
+        {
+          ...newPost,
+          createdAt: new Date(newPost.createdAt),
+          publishedAt: newPost.publishedAt
+            ? new Date(newPost.publishedAt)
+            : null,
+        },
+        ...prev,
+      ]);
 
       // Refresh tags
       await fetchTags();
@@ -120,7 +134,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
   const handleDelete = async () => {
     if (!deletePostId) return;
 
-    await fetch(`/api/posts/${deletePostId}`, { method: 'DELETE' });
+    await fetch(`/api/posts/${deletePostId}`, { method: "DELETE" });
     setPosts((prev) => prev.filter((p) => p.id !== deletePostId));
     setDeletePostId(null);
   };
@@ -129,12 +143,15 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     const lastPost = posts[posts.length - 1];
     if (!lastPost) return;
 
-    const data = await fetchPosts(lastPost.createdAt, 'older');
-    setPosts((prev) => [...prev, ...data.posts.map((p: Post) => ({
-      ...p,
-      createdAt: new Date(p.createdAt),
-      publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
-    }))]);
+    const data = await fetchPosts(lastPost.createdAt, "older");
+    setPosts((prev) => [
+      ...prev,
+      ...data.posts.map((p: Post) => ({
+        ...p,
+        createdAt: new Date(p.createdAt),
+        publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
+      })),
+    ]);
     setHasOlder(data.hasMore);
   };
 
@@ -142,28 +159,31 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     const firstPost = posts[0];
     if (!firstPost) return;
 
-    const data = await fetchPosts(firstPost.createdAt, 'newer');
-    setPosts((prev) => [...data.posts.map((p: Post) => ({
-      ...p,
-      createdAt: new Date(p.createdAt),
-      publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
-    })), ...prev]);
+    const data = await fetchPosts(firstPost.createdAt, "newer");
+    setPosts((prev) => [
+      ...data.posts.map((p: Post) => ({
+        ...p,
+        createdAt: new Date(p.createdAt),
+        publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
+      })),
+      ...prev,
+    ]);
     setHasNewer(data.hasMore);
   };
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     );
   };
 
   const sharePost = posts.find((p) => p.id === sharePostId);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream">
       <Header />
 
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         {session && (
           <div className="mb-8">
             <Composer
@@ -176,15 +196,9 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
           </div>
         )}
 
-        <FilterBar
-          tags={tags}
-          selectedTags={selectedTags}
-          onTagToggle={toggleTag}
-        />
-
         {isLoading ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">Loading...</p>
+            <p className="zissou-mono text-inkstain/60">Loading...</p>
           </div>
         ) : (
           <FeedLayout
@@ -213,10 +227,13 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
 
       {sharePost && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setSharePostId(null)} />
+          <div
+            className="absolute inset-0 bg-inkstain/50"
+            onClick={() => setSharePostId(null)}
+          />
           <div className="relative">
             <ShareMenu
-              postUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/posts/${sharePost.id}`}
+              postUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/posts/${sharePost.id}`}
               postTitle={sharePost.content.slice(0, 60)}
               isOpen={true}
               onClose={() => setSharePostId(null)}

@@ -36,7 +36,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         {label && (
           <label
             htmlFor={textareaId}
-            className="block text-sm font-medium text-deep-space mb-1"
+            className="block zissou-heading text-xs tracking-widest text-inkstain mb-1"
           >
             {label}
           </label>
@@ -46,21 +46,22 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           id={textareaId}
           className={`
             w-full px-3 py-2
-            border rounded-lg
-            text-deep-space placeholder-gray-400
-            transition-colors duration-200
-            focus:outline-none focus:ring-2 focus:ring-blue-green focus:border-transparent
-            disabled:bg-gray-100 disabled:cursor-not-allowed
+            border-0 border-b-2 border-dashed border-inkstain
+            bg-transparent
+            zissou-mono text-inkstain placeholder-inkstain/40
+            transition-none
+            focus:outline-none focus:border-solid focus:bg-mendls-pink/20
+            disabled:bg-cream/50 disabled:cursor-not-allowed disabled:border-dashed
             resize-none
             ${autoExpand ? 'overflow-hidden' : ''}
-            ${error ? 'border-princeton-orange' : 'border-gray-300'}
+            ${error ? 'border-tracksuit-red' : ''}
             ${className}
           `}
           onChange={handleChange}
           {...props}
         />
         {error && (
-          <p className="mt-1 text-sm text-princeton-orange">{error}</p>
+          <p className="mt-1 text-sm text-tracksuit-red zissou-mono">{error}</p>
         )}
       </div>
     );

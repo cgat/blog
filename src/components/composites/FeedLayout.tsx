@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Post } from '@/types/post';
-import { PostCard } from './PostCard';
-import { Button } from '../primitives/Button';
+import { Post } from "@/types/post";
+import { PostCard } from "./PostCard";
+import { Button } from "../primitives/Button";
 
 interface FeedLayoutProps {
   posts: Post[];
@@ -30,13 +30,15 @@ export function FeedLayout({
   if (posts.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="text-gray-500 text-lg">This is your space. What&apos;s on your mind?</p>
+        <p className="zissou-mono text-inkstain/60 text-lg">
+          This is your space. What&apos;s on your mind?
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       {hasNewer && (
         <div className="flex justify-center">
           <Button variant="ghost" onClick={onLoadNewer}>

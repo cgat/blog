@@ -3,8 +3,15 @@ import { useState } from 'react';
 import { FilterBar } from "./FilterBar";
 
 const meta: Meta<typeof FilterBar> = {
-  title: "Composites/FilterBar",
+  title: "The Dioramas/FilterBar",
   component: FilterBar,
+  parameters: {
+    docs: {
+      description: {
+        component: 'Fig 2.6: The Classification Filter. A horizontal array of classification tablets. Select one or more to filter the dispatch archive. A \'Clear filters\' link appears when filters are active \u2014 monospaced, understated, effective.',
+      },
+    },
+  },
 };
 
 export default meta;

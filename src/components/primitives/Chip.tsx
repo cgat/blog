@@ -14,12 +14,13 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(
         type="button"
         className={`
           inline-flex items-center gap-1.5 px-3 py-1.5
-          text-sm font-medium rounded-full
-          transition-colors duration-200
-          focus:outline-none focus:ring-2 focus:ring-blue-green focus:ring-offset-1
+          rounded-none zissou-border
+          zissou-mono text-xs uppercase tracking-wide
+          transition-none
+          focus:outline-none focus:ring-2 focus:ring-deep-ocean-teal focus:ring-offset-1
           ${selected
-            ? 'bg-blue-green text-white'
-            : 'bg-sky-blue bg-opacity-50 text-deep-space hover:bg-opacity-75'
+            ? 'bg-deep-ocean-teal text-white'
+            : 'bg-cream text-inkstain hover:bg-submarine-yellow'
           }
           ${className}
         `}
@@ -40,7 +41,7 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(
                 onRemove?.();
               }
             }}
-            className="ml-0.5 hover:text-princeton-orange"
+            className="ml-0.5 hover:text-tracksuit-red"
           >
             ×
           </span>

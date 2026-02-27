@@ -2,8 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Button } from "./Button";
 
 const meta: Meta<typeof Button> = {
-  title: "Primitives/Button",
+  title: "The Props/Button",
   component: Button,
+  parameters: {
+    docs: {
+      description: {
+        component: "Fig 1.0: The Primary Initiator. To be depressed only when the subject is entirely certain of their next course of action. Available in three variants: Primary (submarine yellow), Secondary (cream), and Ghost (invisible until provoked).",
+      },
+    },
+  },
   argTypes: {
     variant: {
       control: 'select',

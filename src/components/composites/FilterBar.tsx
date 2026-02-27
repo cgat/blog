@@ -25,7 +25,7 @@ export function FilterBar({ tags, selectedTags, onTagToggle }: FilterBarProps) {
       {selectedTags.length > 0 && (
         <button
           onClick={() => selectedTags.forEach(onTagToggle)}
-          className="text-sm text-gray-500 hover:text-deep-space ml-2"
+          className="zissou-mono text-xs uppercase tracking-wider text-inkstain/60 hover:text-tracksuit-red ml-2"
         >
           Clear filters
         </button>

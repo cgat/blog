@@ -2,8 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Chip } from "./Chip";
 
 const meta: Meta<typeof Chip> = {
-  title: "Primitives/Chip",
+  title: "The Props/Chip",
   component: Chip,
+  parameters: {
+    docs: {
+      description: {
+        component: "Fig 1.3: The Classification Tablet. A compact label used for categorization purposes. When selected, it assumes the deep ocean teal of official designation. When idle, cream.",
+      },
+    },
+  },
 };
 
 export default meta;
@@ -47,7 +54,7 @@ export const TagInput: Story = {
     <div className="flex gap-2 flex-wrap items-center">
       <Chip removable onRemove={() => {}}>travel</Chip>
       <Chip removable onRemove={() => {}}>photography</Chip>
-      <span className="text-blue-green text-sm cursor-pointer hover:underline">+ Add tag</span>
+      <span className="text-deep-ocean-teal zissou-mono text-xs uppercase cursor-pointer hover:underline">+ Add tag</span>
     </div>
   ),
 };

@@ -18,7 +18,7 @@ export function MarkdownRenderer({ content, truncate, linkPreviews }: MarkdownRe
     : content;
 
   return (
-    <div className="prose prose-slate max-w-none prose-a:text-blue-green prose-headings:text-deep-space">
+    <div className="prose max-w-none prose-a:text-deep-ocean-teal prose-headings:text-inkstain">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{

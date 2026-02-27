@@ -22,7 +22,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
   if (images.length === 1) {
     const img = images[0];
     return (
-      <div className="rounded-lg overflow-hidden">
+      <div className="overflow-hidden zissou-border">
         <Image
           src={img.url}
           alt={img.alt || 'Post image'}
@@ -35,7 +35,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
   }
 
   return (
-    <div className={`grid gap-1 rounded-lg overflow-hidden ${
+    <div className={`grid gap-1 overflow-hidden ${
       displayImages.length === 2 ? 'grid-cols-2' :
       displayImages.length === 3 ? 'grid-cols-2' :
       'grid-cols-2'
@@ -43,7 +43,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
       {displayImages.map((img, index) => (
         <div
           key={img.id}
-          className={`relative ${
+          className={`relative zissou-border ${
             displayImages.length === 3 && index === 0 ? 'row-span-2' : ''
           } ${expanded ? 'aspect-square' : 'aspect-square'}`}
         >
@@ -54,8 +54,8 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
             className="object-cover"
           />
           {!expanded && index === 3 && remainingCount > 0 && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <span className="text-white text-2xl font-semibold">+{remainingCount}</span>
+            <div className="absolute inset-0 bg-inkstain/50 flex items-center justify-center">
+              <span className="text-white text-2xl font-bold zissou-heading">+{remainingCount}</span>
             </div>
           )}
         </div>

@@ -11,6 +11,7 @@ Continuation of `2026-01-31-mvp-implementation-part2.md`
 ### Task 6.1: Posts API
 
 **Files:**
+
 - Create: `src/app/api/posts/route.ts`
 - Create: `src/app/api/posts/[id]/route.ts`
 - Create: `src/lib/posts.ts`
@@ -19,10 +20,10 @@ Continuation of `2026-01-31-mvp-implementation-part2.md`
 
 ```typescript
 // src/lib/posts.ts
-import { db } from '@/db';
-import { posts, images, tags, postTags } from '@/db/schema';
-import { eq, desc, lt, gt, and, inArray } from 'drizzle-orm';
-import { v4 as uuid } from 'uuid';
+import { db } from "@/db";
+import { posts, images, tags, postTags } from "@/db/schema";
+import { eq, desc, lt, gt, and, inArray } from "drizzle-orm";
+import { v4 as uuid } from "uuid";
 
 export interface CreatePostInput {
   content: string;
@@ -32,7 +33,7 @@ export interface CreatePostInput {
 export interface PostWithRelations {
   id: string;
   content: string;
-  type: 'text' | 'photo';
+  type: "text" | "photo";
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -49,10 +50,13 @@ export interface PostWithRelations {
   }[];
 }
 
-export async function createPost(input: CreatePostInput, imageIds: string[] = []): Promise<PostWithRelations> {
+export async function createPost(
+  input: CreatePostInput,
+  imageIds: string[] = [],
+): Promise<PostWithRelations> {
   const id = uuid();
   const now = new Date();
-  const type = imageIds.length > 0 ? 'photo' : 'text';
+  const type = imageIds.length > 0 ? "photo" : "text";
 
   await db.insert(posts).values({
     id,
@@ -65,15 +69,16 @@ export async function createPost(input: CreatePostInput, imageIds: string[] = []
 
   // Link tags
   if (input.tagIds && input.tagIds.length > 0) {
-    await db.insert(postTags).values(
-      input.tagIds.map((tagId) => ({ postId: id, tagId }))
-    );
+    await db
+      .insert(postTags)
+      .values(input.tagIds.map((tagId) => ({ postId: id, tagId })));
   }
 
   // Update images with post ID
   if (imageIds.length > 0) {
     for (let i = 0; i < imageIds.length; i++) {
-      await db.update(images)
+      await db
+        .update(images)
         .set({ postId: id, position: i })
         .where(eq(images.id, imageIds[i]));
     }
@@ -121,25 +126,25 @@ export async function getPost(id: string): Promise<PostWithRelations | null> {
 export async function getPosts(options: {
   limit?: number;
   cursor?: Date;
-  direction?: 'older' | 'newer';
+  direction?: "older" | "newer";
   tagSlugs?: string[];
 }): Promise<{ posts: PostWithRelations[]; hasMore: boolean }> {
-  const { limit = 20, cursor, direction = 'older', tagSlugs } = options;
+  const { limit = 20, cursor, direction = "older", tagSlugs } = options;
 
   let whereConditions = [];
 
   if (cursor) {
     whereConditions.push(
-      direction === 'older'
+      direction === "older"
         ? lt(posts.createdAt, cursor)
-        : gt(posts.createdAt, cursor)
+        : gt(posts.createdAt, cursor),
     );
   }
 
   // Get posts
   const results = await db.query.posts.findMany({
     where: whereConditions.length > 0 ? and(...whereConditions) : undefined,
-    orderBy: direction === 'older' ? desc(posts.createdAt) : posts.createdAt,
+    orderBy: direction === "older" ? desc(posts.createdAt) : posts.createdAt,
     limit: limit + 1,
     with: {
       images: true,
@@ -155,14 +160,14 @@ export async function getPosts(options: {
   let filteredResults = results;
   if (tagSlugs && tagSlugs.length > 0) {
     filteredResults = results.filter((post) =>
-      post.postTags.some((pt) => tagSlugs.includes(pt.tag.slug))
+      post.postTags.some((pt) => tagSlugs.includes(pt.tag.slug)),
     );
   }
 
   const hasMore = filteredResults.length > limit;
   const postsToReturn = filteredResults.slice(0, limit);
 
-  if (direction === 'newer') {
+  if (direction === "newer") {
     postsToReturn.reverse();
   }
 
@@ -190,11 +195,15 @@ export async function getPosts(options: {
   };
 }
 
-export async function updatePost(id: string, input: Partial<CreatePostInput>): Promise<PostWithRelations | null> {
+export async function updatePost(
+  id: string,
+  input: Partial<CreatePostInput>,
+): Promise<PostWithRelations | null> {
   const existing = await getPost(id);
   if (!existing) return null;
 
-  await db.update(posts)
+  await db
+    .update(posts)
     .set({
       content: input.content,
       updatedAt: new Date(),
@@ -205,9 +214,9 @@ export async function updatePost(id: string, input: Partial<CreatePostInput>): P
   if (input.tagIds) {
     await db.delete(postTags).where(eq(postTags.postId, id));
     if (input.tagIds.length > 0) {
-      await db.insert(postTags).values(
-        input.tagIds.map((tagId) => ({ postId: id, tagId }))
-      );
+      await db
+        .insert(postTags)
+        .values(input.tagIds.map((tagId) => ({ postId: id, tagId })));
     }
   }
 
@@ -224,17 +233,19 @@ export async function deletePost(id: string): Promise<boolean> {
 
 ```typescript
 // src/app/api/posts/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { createPost, getPosts } from '@/lib/posts';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { createPost, getPosts } from "@/lib/posts";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const limit = parseInt(searchParams.get('limit') || '20');
-  const cursor = searchParams.get('cursor');
-  const direction = (searchParams.get('direction') || 'older') as 'older' | 'newer';
-  const tags = searchParams.get('tags')?.split(',').filter(Boolean);
+  const limit = parseInt(searchParams.get("limit") || "20");
+  const cursor = searchParams.get("cursor");
+  const direction = (searchParams.get("direction") || "older") as
+    | "older"
+    | "newer";
+  const tags = searchParams.get("tags")?.split(",").filter(Boolean);
 
   const result = await getPosts({
     limit,
@@ -250,7 +261,7 @@ export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json();
@@ -258,12 +269,15 @@ export async function POST(request: NextRequest) {
 
   if (!content?.trim() && (!imageIds || imageIds.length === 0)) {
     return NextResponse.json(
-      { error: 'Content or images required' },
-      { status: 400 }
+      { error: "Content or images required" },
+      { status: 400 },
     );
   }
 
-  const post = await createPost({ content: content || '', tagIds }, imageIds || []);
+  const post = await createPost(
+    { content: content || "", tagIds },
+    imageIds || [],
+  );
   return NextResponse.json(post, { status: 201 });
 }
 ```
@@ -272,19 +286,19 @@ export async function POST(request: NextRequest) {
 
 ```typescript
 // src/app/api/posts/[id]/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { getPost, updatePost, deletePost } from '@/lib/posts';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { getPost, updatePost, deletePost } from "@/lib/posts";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const post = await getPost(params.id);
 
   if (!post) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   return NextResponse.json(post);
@@ -292,19 +306,19 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json();
   const post = await updatePost(params.id, body);
 
   if (!post) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   return NextResponse.json(post);
@@ -312,12 +326,12 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   await deletePost(params.id);
@@ -337,6 +351,7 @@ git commit -m "feat: add Posts API routes"
 ### Task 6.2: Tags API
 
 **Files:**
+
 - Create: `src/app/api/tags/route.ts`
 - Create: `src/lib/tags.ts`
 
@@ -344,10 +359,10 @@ git commit -m "feat: add Posts API routes"
 
 ```typescript
 // src/lib/tags.ts
-import { db } from '@/db';
-import { tags } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import { v4 as uuid } from 'uuid';
+import { db } from "@/db";
+import { tags } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { v4 as uuid } from "uuid";
 
 export interface Tag {
   id: string;
@@ -359,9 +374,9 @@ function slugify(text: string): string {
   return text
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 export async function getAllTags(): Promise<Tag[]> {
@@ -393,10 +408,10 @@ export async function getOrCreateTag(name: string): Promise<Tag> {
 
 ```typescript
 // src/app/api/tags/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { getAllTags, getOrCreateTag } from '@/lib/tags';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { getAllTags, getOrCreateTag } from "@/lib/tags";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET() {
   const tagsList = await getAllTags();
@@ -407,14 +422,14 @@ export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json();
   const { name } = body;
 
   if (!name?.trim()) {
-    return NextResponse.json({ error: 'Name required' }, { status: 400 });
+    return NextResponse.json({ error: "Name required" }, { status: 400 });
   }
 
   const tag = await getOrCreateTag(name.trim());
@@ -434,6 +449,7 @@ git commit -m "feat: add Tags API routes"
 ### Task 6.3: Images API
 
 **Files:**
+
 - Create: `src/app/api/images/route.ts`
 - Create: `src/app/api/images/[filename]/route.ts`
 - Create: `src/lib/images.ts`
@@ -449,16 +465,16 @@ npm install -D @types/sharp
 
 ```typescript
 // src/lib/images.ts
-import { db } from '@/db';
-import { images } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import { v4 as uuid } from 'uuid';
-import sharp from 'sharp';
-import { writeFile, mkdir, unlink, readFile } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
+import { db } from "@/db";
+import { images } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { v4 as uuid } from "uuid";
+import sharp from "sharp";
+import { writeFile, mkdir, unlink, readFile } from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
 
-const UPLOAD_DIR = './uploads';
+const UPLOAD_DIR = "./uploads";
 
 export interface ImageMeta {
   id: string;
@@ -481,7 +497,7 @@ export async function uploadImage(file: File): Promise<ImageMeta> {
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const id = uuid();
-  const ext = path.extname(file.name) || '.jpg';
+  const ext = path.extname(file.name) || ".jpg";
   const filename = `${id}${ext}`;
   const filepath = path.join(UPLOAD_DIR, filename);
 
@@ -504,7 +520,7 @@ export async function uploadImage(file: File): Promise<ImageMeta> {
   // Save to database (without post_id initially)
   await db.insert(images).values({
     ...imageMeta,
-    postId: '', // Will be updated when post is created
+    postId: "", // Will be updated when post is created
     position: 0,
     createdAt: new Date(),
   });
@@ -539,27 +555,30 @@ export async function deleteImage(id: string): Promise<void> {
 
 ```typescript
 // src/app/api/images/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { uploadImage } from '@/lib/images';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { uploadImage } from "@/lib/images";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const formData = await request.formData();
-  const file = formData.get('file') as File;
+  const file = formData.get("file") as File;
 
   if (!file) {
-    return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
-  if (!file.type.startsWith('image/')) {
-    return NextResponse.json({ error: 'File must be an image' }, { status: 400 });
+  if (!file.type.startsWith("image/")) {
+    return NextResponse.json(
+      { error: "File must be an image" },
+      { status: 400 },
+    );
   }
 
   const imageMeta = await uploadImage(file);
@@ -571,33 +590,33 @@ export async function POST(request: NextRequest) {
 
 ```typescript
 // src/app/api/images/[filename]/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { getImageFile } from '@/lib/images';
+import { NextRequest, NextResponse } from "next/server";
+import { getImageFile } from "@/lib/images";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { filename: string } }
+  { params }: { params: { filename: string } },
 ) {
   const file = await getImageFile(params.filename);
 
   if (!file) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   // Determine content type from filename
-  const ext = params.filename.split('.').pop()?.toLowerCase();
+  const ext = params.filename.split(".").pop()?.toLowerCase();
   const contentTypes: Record<string, string> = {
-    jpg: 'image/jpeg',
-    jpeg: 'image/jpeg',
-    png: 'image/png',
-    gif: 'image/gif',
-    webp: 'image/webp',
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    gif: "image/gif",
+    webp: "image/webp",
   };
 
   return new NextResponse(file, {
     headers: {
-      'Content-Type': contentTypes[ext || 'jpg'] || 'image/jpeg',
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      "Content-Type": contentTypes[ext || "jpg"] || "image/jpeg",
+      "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
 }
@@ -623,6 +642,7 @@ git commit -m "feat: add Images API routes"
 ### Task 7.1: Setup NextAuth with Google
 
 **Files:**
+
 - Create: `src/lib/auth.ts`
 - Create: `src/app/api/auth/[...nextauth]/route.ts`
 - Create: `.env.local.example`
@@ -631,8 +651,8 @@ git commit -m "feat: add Images API routes"
 
 ```typescript
 // src/lib/auth.ts
-import { NextAuthOptions } from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
+import { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
 
 const ALLOWED_EMAIL = process.env.ALLOWED_EMAIL;
 
@@ -659,8 +679,8 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: '/',
-    error: '/',
+    signIn: "/",
+    error: "/",
   },
 };
 ```
@@ -669,8 +689,8 @@ export const authOptions: NextAuthOptions = {
 
 ```typescript
 // src/app/api/auth/[...nextauth]/route.ts
-import NextAuth from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const handler = NextAuth(authOptions);
 
@@ -744,6 +764,7 @@ git commit -m "feat: add NextAuth with Google OAuth"
 ### Task 8.1: Create Header Component
 
 **Files:**
+
 - Create: `src/components/layout/Header.tsx`
 - Create: `src/components/layout/Header.stories.tsx`
 
@@ -780,7 +801,7 @@ export function Header({ blogName = 'My Blog' }: HeaderProps) {
 
   return (
     <header className="border-b border-gray-200 bg-white sticky top-0 z-40">
-      <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
         <a href="/" className="text-xl font-semibold text-deep-space hover:text-blue-green transition-colors">
           {blogName}
         </a>
@@ -867,6 +888,7 @@ git commit -m "feat: add Header layout component"
 ### Task 8.2: Create Feed Page
 
 **Files:**
+
 - Modify: `src/app/page.tsx`
 - Create: `src/app/posts/[id]/page.tsx`
 
@@ -1048,7 +1070,7 @@ export function FeedPage({ focusedPostId }: FeedPageProps) {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         {session && (
           <div className="mb-8">
             <Composer
@@ -1177,6 +1199,7 @@ git commit -m "feat: add Feed and Post pages"
 ### Task 9.1: Create OG Image Route
 
 **Files:**
+
 - Create: `src/app/api/og/[id]/route.tsx`
 
 **Step 1: Create OG image generator**
@@ -1280,6 +1303,7 @@ git commit -m "feat: add OG image generation"
 ### Task 10.1: Create Export Indexes
 
 **Files:**
+
 - Create: `src/components/primitives/index.ts`
 - Create: `src/components/composites/index.ts`
 - Create: `src/components/layout/index.ts`
@@ -1288,34 +1312,34 @@ git commit -m "feat: add OG image generation"
 
 ```typescript
 // src/components/primitives/index.ts
-export { Button } from './Button';
-export { Input } from './Input';
-export { TextArea } from './TextArea';
-export { Chip } from './Chip';
-export { Avatar } from './Avatar';
-export { IconButton } from './IconButton';
+export { Button } from "./Button";
+export { Input } from "./Input";
+export { TextArea } from "./TextArea";
+export { Chip } from "./Chip";
+export { Avatar } from "./Avatar";
+export { IconButton } from "./IconButton";
 ```
 
 **Step 2: Create composite exports**
 
 ```typescript
 // src/components/composites/index.ts
-export { MarkdownRenderer } from './MarkdownRenderer';
-export { MarkdownEditor } from './MarkdownEditor';
-export { ImageGrid } from './ImageGrid';
-export { PostCard } from './PostCard';
-export { Composer } from './Composer';
-export { FilterBar } from './FilterBar';
-export { ShareMenu } from './ShareMenu';
-export { ConfirmDialog } from './ConfirmDialog';
-export { FeedLayout } from './FeedLayout';
+export { MarkdownRenderer } from "./MarkdownRenderer";
+export { MarkdownEditor } from "./MarkdownEditor";
+export { ImageGrid } from "./ImageGrid";
+export { PostCard } from "./PostCard";
+export { Composer } from "./Composer";
+export { FilterBar } from "./FilterBar";
+export { ShareMenu } from "./ShareMenu";
+export { ConfirmDialog } from "./ConfirmDialog";
+export { FeedLayout } from "./FeedLayout";
 ```
 
 **Step 3: Create layout exports**
 
 ```typescript
 // src/components/layout/index.ts
-export { Header } from './Header';
+export { Header } from "./Header";
 ```
 
 **Step 4: Final commit**
@@ -1332,6 +1356,7 @@ git commit -m "feat: add component index exports"
 **Total Tasks:** 31
 
 **Phases:**
+
 1. Project Setup (5 tasks)
 2. Storybook Foundations (3 tasks)
 3. Primitive Components (6 tasks)
@@ -1344,6 +1369,7 @@ git commit -m "feat: add component index exports"
 10. Final cleanup (1 task)
 
 **After completing all tasks:**
+
 1. Run `npm run storybook` to review component library
 2. Run `npm run dev` to test the app
 3. Create `.env.local` with Google OAuth credentials

@@ -8,18 +8,18 @@ const spacings = [
 
 export function Spacing() {
   return (
-    <div className="p-8">
-      <h2 className="text-2xl font-semibold text-deep-space mb-6">Spacing Scale</h2>
+    <div className="p-8 bg-cream">
+      <h2 className="zissou-heading text-2xl font-bold text-inkstain mb-6">Spacing Scale</h2>
       <div className="space-y-4">
         {spacings.map((spacing) => (
           <div key={spacing.name} className="flex items-center gap-4">
-            <div className="w-20 text-sm font-mono text-gray-600">{spacing.name}</div>
-            <div className="w-24 text-sm text-gray-500">{spacing.pixels}</div>
+            <div className="w-20 zissou-mono text-sm text-inkstain">{spacing.name}</div>
+            <div className="w-24 zissou-mono text-sm text-deep-ocean-teal">{spacing.pixels}</div>
             <div
-              className="bg-blue-green h-4"
+              className="bg-deep-ocean-teal h-4"
               style={{ width: spacing.value === '0.25rem' ? '16px' : `calc(${spacing.value} * 4)` }}
             />
-            <div className="text-sm text-gray-400">{spacing.class}</div>
+            <div className="zissou-mono text-sm text-inkstain/50">{spacing.class}</div>
           </div>
         ))}
       </div>

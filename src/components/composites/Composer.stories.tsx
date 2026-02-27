@@ -2,8 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Composer } from "./Composer";
 
 const meta: Meta<typeof Composer> = {
-  title: "Composites/Composer",
+  title: "The Dioramas/Composer",
   component: Composer,
+  parameters: {
+    docs: {
+      description: {
+        component: 'Fig 2.1: The Composition Station. The primary apparatus for drafting new dispatches. Equipped with markdown formatting, photographic attachment, content source search, classification management, and a privacy toggle. Observe the submarine yellow Publish button at lower right.',
+      },
+    },
+  },
 };
 
 export default meta;

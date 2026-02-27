@@ -4,3 +4,4 @@ export { TextArea } from './TextArea';
 export { Chip } from './Chip';
 export { Avatar } from './Avatar';
 export { IconButton } from './IconButton';
+export { Toggle } from './Toggle';

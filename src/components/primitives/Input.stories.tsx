@@ -2,8 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Input } from "./Input";
 
 const meta: Meta<typeof Input> = {
-  title: "Primitives/Input",
+  title: "The Props/Input",
   component: Input,
+  parameters: {
+    docs: {
+      description: {
+        component: "Fig 1.1: The Data Receiver. A single-line receptacle for textual input. The dashed underline indicates incompleteness; upon focus, it solidifies — a visual metaphor for commitment.",
+      },
+    },
+  },
 };
 
 export default meta;

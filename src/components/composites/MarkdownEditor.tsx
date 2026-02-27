@@ -27,11 +27,11 @@ export function MarkdownEditor({ value, onChange, placeholder }: MarkdownEditorP
       </div>
 
       {showPreview ? (
-        <div className="min-h-[120px] p-3 border border-gray-300 rounded-lg bg-gray-50">
+        <div className="min-h-[120px] p-3 border-2 border-inkstain bg-cream">
           {value ? (
             <MarkdownRenderer content={value} />
           ) : (
-            <p className="text-gray-400 italic">Nothing to preview</p>
+            <p className="zissou-mono text-inkstain/40 italic">Nothing to preview</p>
           )}
         </div>
       ) : (

@@ -48,30 +48,30 @@ export function ConfirmDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black bg-opacity-50"
+        className="absolute inset-0 bg-inkstain/50"
         onClick={onCancel}
       />
 
       {/* Dialog */}
       <div
         ref={dialogRef}
-        className="relative bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4"
+        className="relative bg-cream zissou-border zissou-shadow p-6 max-w-md w-full mx-4"
         role="dialog"
         aria-modal="true"
         aria-labelledby="dialog-title"
       >
-        <h2 id="dialog-title" className="text-xl font-semibold text-deep-space mb-2">
+        <h2 id="dialog-title" className="zissou-heading text-xl font-bold text-inkstain mb-2">
           {title}
         </h2>
-        <p className="text-gray-600 mb-6">{message}</p>
+        <p className="text-inkstain/70 mb-6">{message}</p>
         <div className="flex gap-3 justify-end">
           <Button variant="ghost" onClick={onCancel}>
             {cancelLabel}
           </Button>
           <Button
-            variant={variant === 'danger' ? 'primary' : 'primary'}
+            variant="primary"
             onClick={onConfirm}
-            className={variant === 'danger' ? 'bg-princeton-orange hover:bg-opacity-90' : ''}
+            className={variant === 'danger' ? 'bg-tracksuit-red text-white' : ''}
           >
             {confirmLabel}
           </Button>

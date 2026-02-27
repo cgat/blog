@@ -4,8 +4,15 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { Button } from "../primitives/Button";
 
 const meta: Meta<typeof ConfirmDialog> = {
-  title: "Composites/ConfirmDialog",
+  title: "The Dioramas/ConfirmDialog",
   component: ConfirmDialog,
+  parameters: {
+    docs: {
+      description: {
+        component: 'Fig 2.7: The Confirmation Bureau. A modal dialog that requires explicit authorization before proceeding with consequential actions. The danger variant employs tracksuit red to convey the gravity of deletion.',
+      },
+    },
+  },
 };
 
 export default meta;

@@ -21,7 +21,7 @@ export function Avatar({ src, alt = 'Avatar', size = 'md', fallback }: AvatarPro
 
   if (src) {
     return (
-      <div className={`${styles.container} relative rounded-full overflow-hidden bg-gray-200`}>
+      <div className={`${styles.container} relative rounded-full overflow-hidden zissou-border bg-cream`}>
         <Image
           src={src}
           alt={alt}
@@ -38,7 +38,7 @@ export function Avatar({ src, alt = 'Avatar', size = 'md', fallback }: AvatarPro
       className={`
         ${styles.container} ${styles.text}
         flex items-center justify-center
-        rounded-full bg-blue-green text-white font-medium
+        rounded-full zissou-border bg-deep-ocean-teal text-white font-medium
       `}
     >
       {initials}

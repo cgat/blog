@@ -21,8 +21,15 @@ const TrashIcon = () => (
 );
 
 const meta: Meta<typeof IconButton> = {
-  title: "Primitives/IconButton",
+  title: "The Props/IconButton",
   component: IconButton,
+  parameters: {
+    docs: {
+      description: {
+        component: "Fig 1.4: The Pictographic Initiator. A button stripped of its label, leaving only a symbolic glyph. The danger variant turns tracksuit red upon hover — a warning of irreversible consequence.",
+      },
+    },
+  },
 };
 
 export default meta;

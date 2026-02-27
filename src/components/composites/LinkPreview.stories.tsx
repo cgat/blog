@@ -2,8 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { LinkPreview } from "./LinkPreview";
 
 const meta: Meta<typeof LinkPreview> = {
-  title: "Composites/LinkPreview",
+  title: "The Dioramas/LinkPreview",
   component: LinkPreview,
+  parameters: {
+    docs: {
+      description: {
+        component: 'Fig 2.2: The External Reference Card. When a bare URL is detected in dispatch content, this card materializes to display the referenced document\'s title, summary, and origin domain. A small courtesy.',
+      },
+    },
+  },
 };
 
 export default meta;

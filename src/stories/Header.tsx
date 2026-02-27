@@ -32,6 +32,7 @@ export const Header = ({ user, onLogin, onLogout, onCreateAccount }: HeaderProps
             />
           </g>
         </svg>
+        <img src="/filing_cabinet.svg" alt="" width="32" height="32" />
         <h1>Acme</h1>
       </div>
       <div>

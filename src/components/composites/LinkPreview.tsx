@@ -12,10 +12,10 @@ export function LinkPreview({ url, title, description, imageUrl, domain }: LinkP
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="block border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow not-prose"
+      className="block zissou-border overflow-hidden transition-none not-prose hover:zissou-shadow"
     >
       {imageUrl && (
-        <div className="aspect-video w-full overflow-hidden bg-gray-100">
+        <div className="aspect-video w-full overflow-hidden bg-cream">
           <img
             src={imageUrl}
             alt={title || ''}
@@ -23,18 +23,18 @@ export function LinkPreview({ url, title, description, imageUrl, domain }: LinkP
           />
         </div>
       )}
-      <div className={`px-4 ${imageUrl ? 'py-3' : 'py-4'}`}>
+      <div className={`px-4 ${imageUrl ? 'py-3' : 'py-4'} bg-cream`}>
         {title && (
-          <p className="font-semibold text-deep-space line-clamp-2 text-sm">
+          <p className="zissou-heading text-sm font-bold text-inkstain line-clamp-2">
             {title}
           </p>
         )}
         {description && (
-          <p className="text-gray-600 text-sm line-clamp-3 mt-1">
+          <p className="text-inkstain/70 text-sm line-clamp-3 mt-1">
             {description}
           </p>
         )}
-        <p className="text-gray-400 text-xs mt-2 flex items-center gap-1">
+        <p className="zissou-mono text-xs text-deep-ocean-teal mt-2 flex items-center gap-1">
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
           </svg>

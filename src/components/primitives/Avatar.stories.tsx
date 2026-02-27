@@ -2,8 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Avatar } from "./Avatar";
 
 const meta: Meta<typeof Avatar> = {
-  title: "Primitives/Avatar",
+  title: "The Props/Avatar",
   component: Avatar,
+  parameters: {
+    docs: {
+      description: {
+        component: "Fig 1.5: The Porthole. A circular viewport displaying the crew member's likeness. The 2px border evokes a submarine observation window. Falls back to initials when no photograph is on file.",
+      },
+    },
+  },
   argTypes: {
     size: {
       control: 'select',

@@ -3,8 +3,16 @@ import { FeedLayout } from "./FeedLayout";
 import { Post } from "@/types/post";
 
 const meta: Meta<typeof FeedLayout> = {
-  title: "Composites/FeedLayout",
+  title: "The Dioramas/FeedLayout",
   component: FeedLayout,
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Fig 2.9: The Archive Display. Arranges dispatch records in reverse chronological order with optional pagination controls. When the archive is empty, a monospaced invitation appears.",
+      },
+    },
+  },
 };
 
 export default meta;

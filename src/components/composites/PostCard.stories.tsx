@@ -3,8 +3,15 @@ import { PostCard } from "./PostCard";
 import { Post } from "@/types/post";
 
 const meta: Meta<typeof PostCard> = {
-  title: "Composites/PostCard",
+  title: "The Dioramas/PostCard",
   component: PostCard,
+  parameters: {
+    docs: {
+      description: {
+        component: 'Fig 2.0: The Dispatch Record. A complete unit of published communication, mounted behind glass. Contains the full text of the dispatch, any accompanying photographic evidence, and its official classification tablets.',
+      },
+    },
+  },
 };
 
 export default meta;

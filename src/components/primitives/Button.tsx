@@ -9,9 +9,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-blue-green text-white hover:bg-opacity-90 focus:ring-amber-flame',
-  secondary: 'bg-sky-blue text-deep-space hover:bg-opacity-80 focus:ring-blue-green',
-  ghost: 'bg-transparent text-deep-space hover:bg-gray-100 focus:ring-blue-green',
+  primary: 'bg-submarine-yellow zissou-border zissou-shadow text-inkstain active:translate-y-[2px] active:bg-tracksuit-red active:text-white active:shadow-none',
+  secondary: 'bg-cream zissou-border text-inkstain active:translate-y-[2px] active:bg-mendls-pink active:shadow-none',
+  ghost: 'bg-transparent border-2 border-transparent text-inkstain hover:border-inkstain',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -26,10 +26,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={`
-          inline-flex items-center justify-center font-medium rounded-lg
-          transition-colors duration-200
-          focus:outline-none focus:ring-2 focus:ring-offset-2
-          disabled:opacity-50 disabled:cursor-not-allowed
+          inline-flex items-center justify-center font-bold
+          zissou-heading tracking-wider
+          transition-none
+          focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-deep-ocean-teal
+          ${disabled ? 'cursor-not-allowed border-dashed' : ''}
           ${variantStyles[variant]}
           ${sizeStyles[size]}
           ${className}

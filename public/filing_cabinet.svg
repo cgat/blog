@@ -1,0 +1,44 @@
+<svg width="400" height="472" viewBox="27 27 66 78" xmlns="http://www.w3.org/2000/svg">
+            <style>
+                .drawer-anim { animation: drawerMove 3.2s steps(12) forwards; }
+                .paper-anim { animation: paperFly 3.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+                @keyframes drawerMove {
+                    0%, 100% { transform: translateY(0); }
+                    15%, 85% { transform: translateY(9.45px); }
+                }
+                @keyframes paperFly {
+                    0% { transform: translate(60px, 45px) scale(0); opacity: 0; }
+                    10% { opacity: 1; transform: translate(60px, 10px) scale(1); }
+                    100% { transform: translate(var(--tx), 90px) rotate(var(--rt)); opacity: 0; }
+                }
+            </style>
+
+<!-- CONFIGURABLE INTERIOR (The Back Part) -->
+            <rect x="29.5" y="30" width="61" height="70" fill="#ed410c"></rect>
+
+            <!-- PAPERS -->
+            <g id="papers">
+                <rect class="paper paper-anim" width="16" height="22" fill="white" stroke="#3E2B25" stroke-width="0.6" style="--tx: 25px; --rt: -15deg; opacity: 0; animation-delay: 0.3s;"></rect>
+                <rect class="paper paper-anim" width="16" height="22" fill="white" stroke="#3E2B25" stroke-width="0.6" style="--tx: 95px; --rt: 20deg; opacity: 0; animation-delay: 0.5s;"></rect>
+                <rect class="paper paper-anim" width="16" height="22" fill="white" stroke="#3E2B25" stroke-width="0.6" style="--tx: 60px; --rt: 5deg; opacity: 0; animation-delay: 0.7s;"></rect>
+            </g>
+
+            <!-- OUTER FRAME (Compound Path Window) -->
+            <path d="M28.5 29 h63 v72 h-63 z M30.5 31 v68 h59 v-68 z" fill="#ff4000" stroke="#3E2B25" stroke-width="1.2" fill-rule="evenodd"></path>
+
+            <!-- TOP DRAWER (Single Knob) -->
+            <g id="drw" class="drawer-anim">
+                <rect x="33.5" y="34" width="53" height="27" fill="#c0392b" stroke="#3E2B25" stroke-width="1.2" rx="0.5"></rect>
+                <circle cx="60" cy="47.5" r="2.8" fill="#f4d35e" stroke="#3E2B25" stroke-width="0.8"></circle>
+            </g>
+
+            <!-- BOTTOM DRAWER (Single Knob) -->
+            <g>
+                <rect x="33.5" y="63" width="53" height="27" fill="#c0392b" stroke="#3E2B25" stroke-width="1.2" rx="0.5"></rect>
+                <circle cx="60" cy="76.5" r="2.8" fill="#f4d35e" stroke="#3E2B25" stroke-width="0.8"></circle>
+            </g>
+
+            <!-- LEGS (Properly Aligned to Edges) -->
+            <rect x="29.5" y="100" width="10" height="5" fill="#3E2B25" rx="1"></rect>
+            <rect x="80.5" y="100" width="10" height="5" fill="#3E2B25" rx="1"></rect>
+        </svg>

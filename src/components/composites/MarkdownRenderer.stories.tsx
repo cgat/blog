@@ -2,8 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 
 const meta: Meta<typeof MarkdownRenderer> = {
-  title: "Composites/MarkdownRenderer",
+  title: "The Dioramas/MarkdownRenderer",
   component: MarkdownRenderer,
+  parameters: {
+    docs: {
+      description: {
+        component: 'Fig 2.5: The Typesetting Engine. Converts raw markdown into properly formatted prose. Headings are set in Jost, body in Lora, and hyperlinks in deep ocean teal. Bare URLs are replaced with Reference Cards when preview data is available.',
+      },
+    },
+  },
 };
 
 export default meta;
