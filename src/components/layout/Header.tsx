@@ -35,10 +35,10 @@ export function Header({
       <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex flex-row">
           <img
-            src="/filing_cabinet.svg"
+            src="/filing_cabinet2.svg"
             alt=""
-            width="43"
-            height="43"
+            width="56px"
+            height="56px"
             className="mr-1"
           />
           <h2 className="zissou-heading text-3xl text-tracksuit-red font-black text-shadow-[2px_2px_0px_var(--submarine-yellow)]  tracking-[0.2px]! leading-[1.1]! flex flex-col">
