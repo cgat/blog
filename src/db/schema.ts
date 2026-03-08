@@ -21,6 +21,7 @@ export const images = sqliteTable('images', {
   sizeBytes: integer('size_bytes').notNull(),
   mimeType: text('mime_type').notNull(),
   position: integer('position').notNull(),
+  caption: text('caption'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });
 
