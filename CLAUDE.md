@@ -106,7 +106,69 @@ This project uses `.worktrees/` for feature development. The directory is gitign
 
 ## Deployment
 
-Deployed on Hetzner via Coolify.
+Hosted on a Hetzner VPS (CPX series, Ubuntu) with Coolify as the deployment platform.
+
+### Infrastructure
+
+- **Server**: Hetzner CPX (2 vCPU, 2GB RAM + 2GB swap)
+- **IP**: `5.78.103.15`
+- **Coolify dashboard**: `http://5.78.103.15:8000`
+- **App URL**: `http://ogsg408w0488s8g8sgk0004o.5.78.103.15.sslip.io` (sslip.io until a real domain is configured)
+- **Build**: Nixpacks (auto-detected Node.js)
+
+### Persistent Storage (Coolify Storages tab)
+
+| Host path | Container path | Purpose |
+|-----------|---------------|---------|
+| `/data/blog/db` | `/app/data` | SQLite database |
+| `/data/blog/uploads` | `/app/uploads` | Uploaded images |
+
+### Environment Variables (Coolify)
+
+All local `.env.local` vars plus:
+- `AUTH_TRUST_HOST=true` — required because Coolify runs Traefik as a reverse proxy
+- `NODE_OPTIONS=--max-old-space-size=1024` — prevents OOM on 2GB server (optional)
+
+### Deploying
+
+1. Push to `main` on GitHub
+2. Go to Coolify dashboard → app → click **Redeploy**
+3. After deploy, run migrations if schema changed (see below)
+
+### Running Migrations
+
+`drizzle-kit` is a dev dependency, so it's not in the production container. Use `npx` to run it:
+
+```bash
+ssh root@5.78.103.15
+docker exec -it $(docker ps --filter "name=ogsg408w" -q) sh
+npx drizzle-kit migrate
+```
+
+### Server Maintenance
+
+**Swap file** (already configured):
+```bash
+# Verify swap is active
+ssh root@5.78.103.15 swapon --show
+```
+
+**View app logs**:
+```bash
+ssh root@5.78.103.15
+docker logs $(docker ps --filter "name=ogsg408w" -q) --tail 50
+```
+
+**Reset Coolify password** (if needed):
+```bash
+docker exec -it coolify php artisan tinker
+# Then: $u = \App\Models\User::first(); $u->password = bcrypt('newpass'); $u->save();
+```
+
+### Build Notes
+
+- `typescript.ignoreBuildErrors: true` in `next.config.ts` — TypeScript checking OOMs on the 2GB server. Type errors are caught locally during development.
+- Node version is set to 22 via Nixpacks (`NIXPACKS_NODE_VERSION=22` in Coolify)
 
 ## Common Issues
 
