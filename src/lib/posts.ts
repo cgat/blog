@@ -23,6 +23,7 @@ export interface PostWithRelations {
     url: string;
     width: number;
     height: number;
+    caption?: string;
   }[];
   tags: {
     id: string;
@@ -106,6 +107,7 @@ export async function getPost(id: string, options?: { includePrivate?: boolean }
       url: `/api/images/${img.filename}`,
       width: img.width,
       height: img.height,
+      caption: img.caption ?? undefined,
     })),
     tags: result.postTags.map((pt) => ({
       id: pt.tag.id,
@@ -196,6 +198,7 @@ export async function getPosts(options: {
           url: `/api/images/${img.filename}`,
           width: img.width,
           height: img.height,
+          caption: img.caption ?? undefined,
         })),
         tags: result.postTags.map((pt) => ({
           id: pt.tag.id,
