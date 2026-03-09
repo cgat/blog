@@ -168,7 +168,7 @@ function getMimeType(filename: string): string {
 }
 
 function getImageDimensions(filePath: string): { width: number; height: number } {
-  const output = execSync(`/opt/homebrew/bin/identify -format '%w %h' "${filePath}"`, {
+  const output = execSync(`identify -format '%w %h' "${filePath}"`, {
     encoding: 'utf-8',
   }).trim();
   const [w, h] = output.split(' ').map(Number);
@@ -351,9 +351,8 @@ function main() {
 
   migrate();
 
-  const tagsCreated = tagCache.size - tagsCreatedBefore + tagsCreatedBefore; // total tags in cache
   console.log(
-    `\nMigration complete: ${oldPosts.length} posts, ${totalImages} images, ${tagCache.size} tags created`,
+    `\nMigration complete: ${oldPosts.length} posts, ${totalImages} images, ${tagCache.size} tags used`,
   );
 
   db.close();
