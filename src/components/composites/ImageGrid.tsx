@@ -4,9 +4,23 @@ interface ImageItem {
   id: string;
   url: string;
   alt?: string;
+  caption?: string;
   width: number;
   height: number;
   featured?: boolean;
+}
+
+function CaptionIndicator() {
+  return (
+    <div className="absolute bottom-1 right-1 rounded-sm bg-inkstain/40 px-1 py-0.5 backdrop-blur-sm">
+      <svg className="w-3 h-3 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <path d="M7 15h4" />
+        <path d="M13 15h4" />
+        <path d="M7 11h10" />
+      </svg>
+    </div>
+  );
 }
 
 interface ImageGridProps {
@@ -20,7 +34,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
   if (images.length === 1) {
     const img = images[0];
     return (
-      <div className="overflow-hidden zissou-border">
+      <div className="relative overflow-hidden zissou-border">
         <Image
           src={img.url}
           alt={img.alt || 'Post image'}
@@ -28,6 +42,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
           height={img.height}
           className="w-full h-auto"
         />
+        {img.caption && <CaptionIndicator />}
       </div>
     );
   }
@@ -56,7 +71,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
         style={{ aspectRatio: `${featured.width * 2} / ${featured.height}` }}
       >
         {/* Featured image — portrait, left side, no crop */}
-        <div className="h-full shrink-0 zissou-border overflow-hidden">
+        <div className="relative h-full shrink-0 zissou-border overflow-hidden">
           <Image
             src={featured.url}
             alt={featured.alt || 'Featured image'}
@@ -64,6 +79,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
             height={featured.height}
             className="h-full w-auto"
           />
+          {featured.caption && <CaptionIndicator />}
         </div>
 
         {/* Remaining images — square cells, 8 per column, flowing into new columns */}
@@ -86,6 +102,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
                 fill
                 className="object-cover"
               />
+              {img.caption && <CaptionIndicator />}
               {!expanded && index === displayRest.length - 1 && remainingCount > 0 && (
                 <div className="absolute inset-0 bg-inkstain/60 flex items-center justify-center">
                   <span className="text-white text-xl font-bold zissou-heading">
@@ -110,7 +127,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
   return (
     <div className="flex flex-col gap-1 overflow-hidden">
       {/* Featured image — landscape, full width, no crop */}
-      <div className="zissou-border overflow-hidden">
+      <div className="relative zissou-border overflow-hidden">
         <Image
           src={featured.url}
           alt={featured.alt || 'Featured image'}
@@ -118,6 +135,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
           height={featured.height}
           className="w-full h-auto"
         />
+        {featured.caption && <CaptionIndicator />}
       </div>
 
       {/* Remaining images — 8 columns of square cells */}
@@ -139,6 +157,7 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
                 fill
                 className="object-cover"
               />
+              {img.caption && <CaptionIndicator />}
               {!expanded && index === displayRest.length - 1 && remainingCount > 0 && (
                 <div className="absolute inset-0 bg-inkstain/60 flex items-center justify-center">
                   <span className="text-white text-xl font-bold zissou-heading">
