@@ -269,7 +269,7 @@ function main() {
   );
   const insertPostTag = db.prepare('INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)');
   const insertImage = db.prepare(
-    'INSERT INTO images (id, post_id, filename, original_filename, width, height, size_bytes, mime_type, position, caption, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO images (id, post_id, filename, original_filename, width, height, size_bytes, mime_type, position, caption, featured, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
   );
 
   let totalImages = 0;
@@ -326,6 +326,7 @@ function main() {
         const sizeBytes = fs.statSync(destPath).size;
         const mimeType = getMimeType(pn.image);
         const caption = pn.description || null;
+        const featured = pn.id === oldPost.photoNodeId ? 1 : 0;
 
         insertImage.run(
           imageId,
@@ -338,6 +339,7 @@ function main() {
           mimeType,
           pn.rankNumber,
           caption,
+          featured,
           epochSeconds,
         );
         totalImages++;

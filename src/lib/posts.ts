@@ -24,6 +24,7 @@ export interface PostWithRelations {
     width: number;
     height: number;
     caption?: string;
+    featured?: boolean;
   }[];
   tags: {
     id: string;
@@ -108,6 +109,7 @@ export async function getPost(id: string, options?: { includePrivate?: boolean }
       width: img.width,
       height: img.height,
       caption: img.caption ?? undefined,
+      featured: img.featured || undefined,
     })),
     tags: result.postTags.map((pt) => ({
       id: pt.tag.id,

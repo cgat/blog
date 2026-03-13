@@ -3,6 +3,7 @@ export interface PostImage {
   url: string;
   alt?: string;
   caption?: string;
+  featured?: boolean;
   width: number;
   height: number;
 }
