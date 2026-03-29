@@ -31,5 +31,6 @@ export interface Post {
   linkPreviews: Record<string, LinkPreviewData>;
   isPrivate: boolean;
   createdAt: Date;
+  updatedAt: Date;
   publishedAt: Date | null;
 }

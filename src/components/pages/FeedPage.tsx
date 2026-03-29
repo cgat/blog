@@ -23,6 +23,8 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
   const [hasOlder, setHasOlder] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDrafts, setShowDrafts] = useState(false);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [sharePostId, setSharePostId] = useState<string | null>(null);
   const [viewerImage, setViewerImage] = useState<PostImage | null>(null);
@@ -36,13 +38,14 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
       params.set("direction", direction);
       if (selectedTags.length > 0) params.set("tags", selectedTags.join(","));
       if (includePrivate) params.set("includePrivate", "true");
+      if (showDrafts) params.set("draftsOnly", "true");
 
       const res = await fetch(`/api/posts?${params}`);
       const data = await res.json();
 
       return data;
     },
-    [selectedTags, includePrivate],
+    [selectedTags, includePrivate, showDrafts],
   );
 
   const fetchTags = async () => {
@@ -59,6 +62,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
         postsData.posts.map((p: Post) => ({
           ...p,
           createdAt: new Date(p.createdAt),
+          updatedAt: new Date(p.updatedAt),
           publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
         })),
       );
@@ -74,6 +78,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     images: File[];
     tags: string[];
     isPrivate: boolean;
+    isDraft?: boolean;
   }) => {
     setIsSubmitting(true);
 
@@ -109,20 +114,26 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
           imageIds,
           tagIds,
           isPrivate: data.isPrivate,
+          isDraft: data.isDraft,
         }),
       });
 
       const newPost = await res.json();
-      setPosts((prev) => [
-        {
-          ...newPost,
-          createdAt: new Date(newPost.createdAt),
-          publishedAt: newPost.publishedAt
-            ? new Date(newPost.publishedAt)
-            : null,
-        },
-        ...prev,
-      ]);
+      const isDraft = !newPost.publishedAt;
+      // Only add to current view if it matches the filter
+      if ((isDraft && showDrafts) || (!isDraft && !showDrafts)) {
+        setPosts((prev) => [
+          {
+            ...newPost,
+            createdAt: new Date(newPost.createdAt),
+            updatedAt: new Date(newPost.updatedAt),
+            publishedAt: newPost.publishedAt
+              ? new Date(newPost.publishedAt)
+              : null,
+          },
+          ...prev,
+        ]);
+      }
 
       await fetchTags();
     } finally {
@@ -138,6 +149,90 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     setDeletePostId(null);
   };
 
+  const handleSaveEdit = async (postId: string, data: {
+    content: string;
+    images: File[];
+    existingImageIds: string[];
+    tags: string[];
+    isPrivate: boolean;
+    publish?: boolean;
+  }) => {
+    setIsSubmitting(true);
+    try {
+      // Upload new images
+      const newImageIds: string[] = [];
+      for (const file of data.images) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/images", { method: "POST", body: formData });
+        const imageData = await res.json();
+        newImageIds.push(imageData.id);
+      }
+
+      // Resolve tag IDs
+      const tagIds: string[] = [];
+      for (const tagName of data.tags) {
+        const res = await fetch("/api/tags", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: tagName }),
+        });
+        const tagData = await res.json();
+        tagIds.push(tagData.id);
+      }
+
+      const allImageIds = [...data.existingImageIds, ...newImageIds];
+
+      const res = await fetch(`/api/posts/${postId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: data.content,
+          tagIds,
+          imageIds: allImageIds,
+          isPrivate: data.isPrivate,
+          publish: data.publish,
+        }),
+      });
+
+      const updatedPost = await res.json();
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? {
+                ...updatedPost,
+                createdAt: new Date(updatedPost.createdAt),
+                updatedAt: new Date(updatedPost.updatedAt),
+                publishedAt: updatedPost.publishedAt ? new Date(updatedPost.publishedAt) : null,
+              }
+            : p
+        ).filter((p) => {
+          // If we just published a draft and we're viewing drafts, remove it
+          if (data.publish && showDrafts && p.id === postId) return false;
+          return true;
+        })
+      );
+
+      setEditingPostId(null);
+      await fetchTags();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePublishDraft = async (postId: string) => {
+    const res = await fetch(`/api/posts/${postId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ publish: true }),
+    });
+
+    if (res.ok) {
+      // Remove from drafts view
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+    }
+  };
+
   const handleLoadOlder = async () => {
     const lastPost = posts[posts.length - 1];
     if (!lastPost) return;
@@ -148,6 +243,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
       ...data.posts.map((p: Post) => ({
         ...p,
         createdAt: new Date(p.createdAt),
+        updatedAt: new Date(p.updatedAt),
         publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
       })),
     ]);
@@ -163,6 +259,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
       ...data.posts.map((p: Post) => ({
         ...p,
         createdAt: new Date(p.createdAt),
+        updatedAt: new Date(p.updatedAt),
         publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
       })),
       ...prev,
@@ -231,6 +328,23 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
         </div>
       )}
 
+      {session && (
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setShowDrafts(false)}
+            className={`zissou-mono text-xs uppercase px-3 py-1 ${!showDrafts ? 'bg-inkstain text-cream' : 'text-inkstain/60 hover:text-inkstain'}`}
+          >
+            Published
+          </button>
+          <button
+            onClick={() => setShowDrafts(true)}
+            className={`zissou-mono text-xs uppercase px-3 py-1 ${showDrafts ? 'bg-inkstain text-cream' : 'text-inkstain/60 hover:text-inkstain'}`}
+          >
+            Drafts
+          </button>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="text-center py-8">
           <p className="zissou-mono text-inkstain/60">Loading...</p>
@@ -241,11 +355,32 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
           isOwner={!!session}
           hasNewer={hasNewer}
           hasOlder={hasOlder}
+          editingPostId={editingPostId}
+          renderEditComposer={(post) => (
+            <Composer
+              userAvatar={session?.user?.image || undefined}
+              userName={session?.user?.name || undefined}
+              existingTags={tags}
+              onPublish={handlePublish}
+              isSubmitting={isSubmitting}
+              editPost={{
+                id: post.id,
+                content: post.content,
+                tags: post.tags.map((t) => t.name),
+                isPrivate: post.isPrivate,
+                images: post.images.map((img) => ({ id: img.id, url: img.url })),
+                isDraft: !post.publishedAt,
+              }}
+              onSave={(data) => handleSaveEdit(post.id, data)}
+              onCancel={() => setEditingPostId(null)}
+            />
+          )}
           onLoadNewer={handleLoadNewer}
           onLoadOlder={handleLoadOlder}
-          onPostEdit={(id) => alert(`Edit ${id} - not implemented`)}
+          onPostEdit={setEditingPostId}
           onPostDelete={setDeletePostId}
           onPostShare={setSharePostId}
+          onPostPublish={(id) => handlePublishDraft(id)}
           onImageClick={handleImageClick}
         />
       )}

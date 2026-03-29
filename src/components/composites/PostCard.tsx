@@ -1,5 +1,6 @@
 "use client";
 
+import { ReactNode } from "react";
 import { Post, PostImage } from "@/types/post";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { ImageGrid } from "./ImageGrid";
@@ -9,9 +10,12 @@ import { IconButton } from "../primitives/IconButton";
 interface PostCardProps {
   post: Post;
   isOwner?: boolean;
+  isEditing?: boolean;
+  editComposer?: ReactNode;
   onEdit?: () => void;
   onDelete?: () => void;
   onShare?: () => void;
+  onPublish?: () => void;
   onImageClick?: (image: PostImage) => void;
 }
 
@@ -47,6 +51,22 @@ const EditIcon = () => (
   </svg>
 );
 
+const PublishIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M5 10l7-7m0 0l7 7m-7-7v18"
+    />
+  </svg>
+);
+
 const TrashIcon = () => (
   <svg
     className="w-5 h-5"
@@ -66,11 +86,22 @@ const TrashIcon = () => (
 export function PostCard({
   post,
   isOwner = false,
+  isEditing,
+  editComposer,
   onEdit,
   onDelete,
   onShare,
+  onPublish,
   onImageClick,
 }: PostCardProps) {
+  if (isEditing && editComposer) {
+    return (
+      <article className="bg-[white] zissou-border zissou-shadow p-6">
+        {editComposer}
+      </article>
+    );
+  }
+
   const formattedDate = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -87,6 +118,11 @@ export function PostCard({
           <time className="zissou-mono text-xs text-inkstain/60">
             {formattedDate}
           </time>
+          {!post.publishedAt && (
+            <span className="flex items-center gap-1 text-submarine-yellow zissou-mono text-xs uppercase">
+              Draft
+            </span>
+          )}
           {post.isPrivate && (
             <span className="flex items-center gap-1 text-tracksuit-red zissou-mono text-xs uppercase">
               <svg
@@ -110,6 +146,13 @@ export function PostCard({
           <IconButton icon={<ShareIcon />} label="Share" onClick={onShare} />
           {isOwner && (
             <>
+              {!post.publishedAt && onPublish && (
+                <IconButton
+                  icon={<PublishIcon />}
+                  label="Publish"
+                  onClick={onPublish}
+                />
+              )}
               <IconButton icon={<EditIcon />} label="Edit" onClick={onEdit} />
               <IconButton
                 icon={<TrashIcon />}

@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { posts, images, postTags } from '@/db/schema';
-import { eq, desc, lt, gt, and } from 'drizzle-orm';
+import { eq, desc, lt, gt, and, isNull, isNotNull } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import { extractBareUrls, getLinkPreviewsForUrls, processPostLinkPreviews } from '@/lib/link-previews';
 
@@ -8,6 +8,7 @@ export interface CreatePostInput {
   content: string;
   tagIds?: string[];
   isPrivate?: boolean;
+  isDraft?: boolean;
 }
 
 export interface PostWithRelations {
@@ -45,7 +46,7 @@ export async function createPost(input: CreatePostInput, imageIds: string[] = []
     type,
     createdAt: now,
     updatedAt: now,
-    publishedAt: now,
+    publishedAt: input.isDraft ? null : now,
     isPrivate: input.isPrivate ?? false,
   });
 
@@ -68,14 +69,18 @@ export async function createPost(input: CreatePostInput, imageIds: string[] = []
   // Scrape link previews for any bare URLs in the content
   await processPostLinkPreviews(input.content);
 
-  return getPost(id, { includePrivate: true }) as Promise<PostWithRelations>;
+  return getPost(id, { includePrivate: true, includeDrafts: true }) as Promise<PostWithRelations>;
 }
 
-export async function getPost(id: string, options?: { includePrivate?: boolean }): Promise<PostWithRelations | null> {
+export async function getPost(id: string, options?: { includePrivate?: boolean; includeDrafts?: boolean }): Promise<PostWithRelations | null> {
   const includePrivate = options?.includePrivate ?? false;
+  const includeDrafts = options?.includeDrafts ?? false;
   const whereConditions = [eq(posts.id, id)];
   if (!includePrivate) {
     whereConditions.push(eq(posts.isPrivate, false));
+  }
+  if (!includeDrafts) {
+    whereConditions.push(isNotNull(posts.publishedAt));
   }
 
   const result = await db.query.posts.findFirst({
@@ -126,13 +131,21 @@ export async function getPosts(options: {
   direction?: 'older' | 'newer';
   tagSlugs?: string[];
   includePrivate?: boolean;
+  draftsOnly?: boolean;
 }): Promise<{ posts: PostWithRelations[]; hasMore: boolean }> {
-  const { limit = 20, cursor, direction = 'older', tagSlugs, includePrivate = false } = options;
+  const { limit = 20, cursor, direction = 'older', tagSlugs, includePrivate = false, draftsOnly = false } = options;
 
   const whereConditions = [];
 
   if (!includePrivate) {
     whereConditions.push(eq(posts.isPrivate, false));
+  }
+
+  // Draft filtering
+  if (draftsOnly) {
+    whereConditions.push(isNull(posts.publishedAt));
+  } else {
+    whereConditions.push(isNotNull(posts.publishedAt));
   }
 
   if (cursor) {
@@ -214,13 +227,19 @@ export async function getPosts(options: {
   };
 }
 
-export async function updatePost(id: string, input: Partial<CreatePostInput>): Promise<PostWithRelations | null> {
-  const existing = await getPost(id, { includePrivate: true });
+export async function updatePost(id: string, input: Partial<CreatePostInput> & { publish?: boolean; imageIds?: string[] }): Promise<PostWithRelations | null> {
+  const existing = await getPost(id, { includePrivate: true, includeDrafts: true });
   if (!existing) return null;
 
   const updateFields: Record<string, unknown> = { updatedAt: new Date() };
   if (input.content !== undefined) updateFields.content = input.content;
   if (input.isPrivate !== undefined) updateFields.isPrivate = input.isPrivate;
+  if (input.publish) updateFields.publishedAt = new Date();
+
+  // Update post type based on images
+  if (input.imageIds !== undefined) {
+    updateFields.type = input.imageIds.length > 0 ? 'photo' : 'text';
+  }
 
   await db.update(posts)
     .set(updateFields)
@@ -236,11 +255,25 @@ export async function updatePost(id: string, input: Partial<CreatePostInput>): P
     }
   }
 
+  // Update image associations if provided
+  if (input.imageIds !== undefined) {
+    // Unlink existing images
+    await db.update(images)
+      .set({ postId: null })
+      .where(eq(images.postId, id));
+    // Link new images
+    for (let i = 0; i < input.imageIds.length; i++) {
+      await db.update(images)
+        .set({ postId: id, position: i })
+        .where(eq(images.id, input.imageIds[i]));
+    }
+  }
+
   if (input.content) {
     await processPostLinkPreviews(input.content);
   }
 
-  return getPost(id, { includePrivate: true });
+  return getPost(id, { includePrivate: true, includeDrafts: true });
 }
 
 export async function deletePost(id: string): Promise<boolean> {

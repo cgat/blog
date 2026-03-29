@@ -18,8 +18,27 @@ interface ComposerProps {
     images: File[];
     tags: string[];
     isPrivate: boolean;
+    isDraft?: boolean;
   }) => void | Promise<void>;
   isSubmitting?: boolean;
+  // Edit mode props
+  editPost?: {
+    id: string;
+    content: string;
+    tags: string[];
+    isPrivate: boolean;
+    images: { id: string; url: string }[];
+    isDraft: boolean;
+  };
+  onSave?: (data: {
+    content: string;
+    images: File[];
+    existingImageIds: string[];
+    tags: string[];
+    isPrivate: boolean;
+    publish?: boolean;
+  }) => void | Promise<void>;
+  onCancel?: () => void;
 }
 
 const PhotoIcon = () => (
@@ -97,12 +116,16 @@ export function Composer({
   existingTags = [],
   onPublish,
   isSubmitting = false,
+  editPost,
+  onSave,
+  onCancel,
 }: ComposerProps) {
-  const [content, setContent] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [content, setContent] = useState(editPost?.content ?? "");
+  const [isPrivate, setIsPrivate] = useState(editPost?.isPrivate ?? false);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(editPost?.tags ?? []);
+  const [existingImages, setExistingImages] = useState(editPost?.images ?? []);
   const [newTag, setNewTag] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -147,18 +170,35 @@ export function Composer({
     }
   };
 
-  const handleSubmit = async () => {
+  const removeExistingImage = (imageId: string) => {
+    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+  };
+
+  const handleSubmit = async (isDraft?: boolean) => {
     if (!content.trim() && images.length === 0) return;
-    await onPublish({ content, images, tags: selectedTags, isPrivate });
+    await onPublish({ content, images, tags: selectedTags, isPrivate, isDraft });
     setContent("");
     setIsPrivate(false);
     setImages([]);
     setImagePreviews([]);
     setSelectedTags([]);
+    setExistingImages([]);
     setActiveSource(null);
     setSearchQuery("");
     setSearchResults([]);
     setHasSearched(false);
+  };
+
+  const handleSave = async (publish?: boolean) => {
+    if (!content.trim() && images.length === 0 && existingImages.length === 0) return;
+    await onSave?.({
+      content,
+      images,
+      existingImageIds: existingImages.map((img) => img.id),
+      tags: selectedTags,
+      isPrivate,
+      publish,
+    });
   };
 
   const toggleSource = (source: ContentSource) => {
@@ -240,8 +280,19 @@ export function Composer({
       </div>
 
       {/* Image Previews */}
-      {imagePreviews.length > 0 && (
+      {(existingImages.length > 0 || imagePreviews.length > 0) && (
         <div className="flex gap-2 flex-wrap mb-4 ml-14">
+          {existingImages.map((img) => (
+            <div key={img.id} className="relative w-20 h-20">
+              <img src={img.url} alt="" className="w-full h-full object-cover zissou-border" />
+              <button
+                onClick={() => removeExistingImage(img.id)}
+                className="absolute -top-2 -right-2 w-5 h-5 bg-tracksuit-red text-white text-xs flex items-center justify-center zissou-border"
+              >
+                ×
+              </button>
+            </div>
+          ))}
           {imagePreviews.map((preview, index) => (
             <div key={index} className="relative w-20 h-20">
               <img
@@ -460,13 +511,26 @@ export function Composer({
             onChange={() => setIsPrivate(!isPrivate)}
             label={isPrivate ? "PRIVATE" : "PUBLIC"}
           />
-          <Button onClick={handleSubmit} disabled={!canPublish}>
-            {isSubmitting
-              ? "Publishing..."
-              : isPrivate
-                ? "Post Privately"
-                : "Publish"}
-          </Button>
+          {editPost ? (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" onClick={onCancel}>Cancel</Button>
+              {editPost.isDraft && (
+                <Button onClick={() => handleSave(true)}>Publish</Button>
+              )}
+              <Button onClick={() => handleSave()}>
+                {isSubmitting ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" onClick={() => handleSubmit(true)} disabled={!canPublish}>
+                {isSubmitting ? "Saving..." : "Save Draft"}
+              </Button>
+              <Button onClick={() => handleSubmit(false)} disabled={!canPublish}>
+                {isSubmitting ? "Publishing..." : isPrivate ? "Post Privately" : "Publish"}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

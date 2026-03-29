@@ -9,10 +9,12 @@ export async function GET(request: NextRequest) {
   const direction = (searchParams.get('direction') || 'older') as 'older' | 'newer';
   const tags = searchParams.get('tags')?.split(',').filter(Boolean);
   const includePrivateParam = searchParams.get('includePrivate') === 'true';
+  const draftsOnly = searchParams.get('draftsOnly') === 'true';
 
-  // Only honor includePrivate when authenticated
-  const session = includePrivateParam ? await auth() : null;
+  // Only honor includePrivate/draftsOnly when authenticated
+  const session = (includePrivateParam || draftsOnly) ? await auth() : null;
   const includePrivate = includePrivateParam && !!session;
+  const showDrafts = draftsOnly && !!session;
 
   const result = await getPosts({
     limit,
@@ -20,6 +22,7 @@ export async function GET(request: NextRequest) {
     direction,
     tagSlugs: tags,
     includePrivate,
+    draftsOnly: showDrafts,
   });
 
   return NextResponse.json(result);
@@ -33,7 +36,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { content, tagIds, imageIds, isPrivate } = body;
+  const { content, tagIds, imageIds, isPrivate, isDraft } = body;
 
   if (!content?.trim() && (!imageIds || imageIds.length === 0)) {
     return NextResponse.json(
@@ -42,6 +45,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const post = await createPost({ content: content || '', tagIds, isPrivate: !!isPrivate }, imageIds || []);
+  const post = await createPost({ content: content || '', tagIds, isPrivate: !!isPrivate, isDraft: !!isDraft }, imageIds || []);
   return NextResponse.json(post, { status: 201 });
 }

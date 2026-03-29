@@ -1,5 +1,6 @@
 "use client";
 
+import { ReactNode } from "react";
 import { Post, PostImage } from "@/types/post";
 import { PostCard } from "./PostCard";
 import { Button } from "../primitives/Button";
@@ -9,11 +10,14 @@ interface FeedLayoutProps {
   isOwner?: boolean;
   hasNewer?: boolean;
   hasOlder?: boolean;
+  editingPostId?: string | null;
+  renderEditComposer?: (post: Post) => ReactNode;
   onLoadNewer?: () => void;
   onLoadOlder?: () => void;
   onPostEdit?: (postId: string) => void;
   onPostDelete?: (postId: string) => void;
   onPostShare?: (postId: string) => void;
+  onPostPublish?: (postId: string) => void;
   onImageClick?: (image: PostImage, post: Post) => void;
 }
 
@@ -22,11 +26,14 @@ export function FeedLayout({
   isOwner = false,
   hasNewer = false,
   hasOlder = false,
+  editingPostId,
+  renderEditComposer,
   onLoadNewer,
   onLoadOlder,
   onPostEdit,
   onPostDelete,
   onPostShare,
+  onPostPublish,
   onImageClick,
 }: FeedLayoutProps) {
   if (posts.length === 0) {
@@ -54,9 +61,12 @@ export function FeedLayout({
           key={post.id}
           post={post}
           isOwner={isOwner}
+          isEditing={editingPostId === post.id}
+          editComposer={editingPostId === post.id ? renderEditComposer?.(post) : undefined}
           onEdit={() => onPostEdit?.(post.id)}
           onDelete={() => onPostDelete?.(post.id)}
           onShare={() => onPostShare?.(post.id)}
+          onPublish={() => onPostPublish?.(post.id)}
           onImageClick={(image) => onImageClick?.(image, post)}
         />
       ))}
