@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { PostImage } from "@/types/post";
 import { useEffect } from "react";
+import { usePanelMode } from "../layout/AppLayout";
 
 interface ImageViewerProps {
   image: PostImage;
@@ -75,6 +76,8 @@ function ViewerCard({ image, onClose, onPrev, onNext }: ImageViewerProps) {
 }
 
 export function ImageViewer({ image, onClose, onPrev, onNext }: ImageViewerProps) {
+  const mode = usePanelMode();
+
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -85,20 +88,16 @@ export function ImageViewer({ image, onClose, onPrev, onNext }: ImageViewerProps
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose, onPrev, onNext]);
 
+  if (mode === "inline") {
+    return <ViewerCard image={image} onClose={onClose} onPrev={onPrev} onNext={onNext} />;
+  }
+
   return (
-    <>
-      {/* Desktop: plain card, parent handles layout */}
-      <div className="max-md:hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-inkstain/60" onClick={onClose} />
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <ViewerCard image={image} onClose={onClose} onPrev={onPrev} onNext={onNext} />
       </div>
-
-      {/* Mobile: modal overlay */}
-      <div className="md:hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-inkstain/60" onClick={onClose} />
-        <div className="relative w-full max-h-[90vh] overflow-y-auto">
-          <ViewerCard image={image} onClose={onClose} onPrev={onPrev} onNext={onNext} />
-        </div>
-      </div>
-    </>
+    </div>
   );
 }
