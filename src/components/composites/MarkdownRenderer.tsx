@@ -27,9 +27,8 @@ export function MarkdownRenderer({
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          p: ({ children, ...props }) => {
+          p: ({ children, node, ...props }) => {
             const childArray = React.Children.toArray(children);
-            console.log(childArray);
             if (childArray.length === 1 && linkPreviews) {
               const child = childArray[0];
               if (
@@ -57,7 +56,6 @@ export function MarkdownRenderer({
                 }
               }
             }
-            console.log(props);
             return <p {...props}>{children}</p>;
           },
         }}
