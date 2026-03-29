@@ -44,7 +44,7 @@ body {
 }
 
 .zissou-mono {
-  font-family: var(--font-mono), "Courier Prime", monospace;
+  font-family: var(--font-courier-prime), "Courier Prime", monospace;
 }
 
 .zissou-shadow {
@@ -74,7 +74,7 @@ body {
 }
 
 .prose :where(code) {
-  font-family: var(--font-mono), "Courier Prime", monospace;
+  font-family: var(--font-courier-prime), "Courier Prime", monospace;
 }
 
 .prose :where(blockquote) {

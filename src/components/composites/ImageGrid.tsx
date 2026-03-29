@@ -26,15 +26,19 @@ function CaptionIndicator() {
 interface ImageGridProps {
   images: ImageItem[];
   expanded?: boolean;
+  onImageClick?: (image: ImageItem) => void;
 }
 
-export function ImageGrid({ images, expanded = false }: ImageGridProps) {
+export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridProps) {
   if (images.length === 0) return null;
 
   if (images.length === 1) {
     const img = images[0];
     return (
-      <div className="relative overflow-hidden zissou-border">
+      <div
+        className="relative overflow-hidden zissou-border cursor-pointer"
+        onClick={() => onImageClick?.(img)}
+      >
         <Image
           src={img.url}
           alt={img.alt || 'Post image'}
@@ -71,7 +75,10 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
         style={{ aspectRatio: `${featured.width * 2} / ${featured.height}` }}
       >
         {/* Featured image — portrait, left side, no crop */}
-        <div className="relative h-full shrink-0 zissou-border overflow-hidden">
+        <div
+          className="relative h-full shrink-0 zissou-border overflow-hidden cursor-pointer"
+          onClick={() => onImageClick?.(featured)}
+        >
           <Image
             src={featured.url}
             alt={featured.alt || 'Featured image'}
@@ -94,7 +101,8 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
           {displayRest.map((img, index) => (
             <div
               key={img.id}
-              className="relative zissou-border overflow-hidden"
+              className="relative zissou-border overflow-hidden cursor-pointer"
+              onClick={() => onImageClick?.(img)}
             >
               <Image
                 src={img.url}
@@ -127,7 +135,10 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
   return (
     <div className="flex flex-col gap-1 overflow-hidden">
       {/* Featured image — landscape, full width, no crop */}
-      <div className="relative zissou-border overflow-hidden">
+      <div
+        className="relative zissou-border overflow-hidden cursor-pointer"
+        onClick={() => onImageClick?.(featured)}
+      >
         <Image
           src={featured.url}
           alt={featured.alt || 'Featured image'}
@@ -149,7 +160,8 @@ export function ImageGrid({ images, expanded = false }: ImageGridProps) {
           {displayRest.map((img, index) => (
             <div
               key={img.id}
-              className="relative zissou-border aspect-square overflow-hidden"
+              className="relative zissou-border aspect-square overflow-hidden cursor-pointer"
+              onClick={() => onImageClick?.(img)}
             >
               <Image
                 src={img.url}

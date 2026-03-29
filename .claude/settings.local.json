@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git merge*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git worktree*)",
+      "Bash(npm install*)",
+      "Bash(npm run*)",
+      "Bash(npm ci*)",
+      "Bash(npx*)",
+      "Bash(ls*)",
+      "Bash(cp*)",
+      "Bash(mkdir*)",
+      "Bash(rm -rf node_modules*)",
+      "Bash(rm -rf .next*)",
+      "Bash(node*)",
+      "Bash(asdf*)",
+      "Bash(git commit:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(node:*)",
+      "Bash(brew list:*)",
+      "Bash(pg_restore:*)",
+      "Bash(brew services list)",
+      "Bash(brew services:*)",
+      "Bash(sqlite3:*)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git reset --hard*)",
+      "Bash(rm -rf /*)"
+    ]
+  }
+}

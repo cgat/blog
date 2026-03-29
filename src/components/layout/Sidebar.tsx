@@ -5,13 +5,11 @@ import { Avatar } from "../primitives/Avatar";
 import { Button } from "../primitives/Button";
 import { useState, useRef, useEffect } from "react";
 
-interface HeaderProps {
-  blogName?: string;
+interface SidebarProps {
+  minimized?: boolean;
 }
 
-export function Header({
-  blogName = "The Archive of Small Things",
-}: HeaderProps) {
+export function Sidebar({ minimized = false }: SidebarProps) {
   const { data: session, status } = useSession();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -31,26 +29,33 @@ export function Header({
   }, []);
 
   return (
-    <header className="border-b-2 border-inkstain bg-[white] sticky top-0 z-40">
-      <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex flex-row">
-          <img
-            src="/filing_cabinet2.svg"
-            alt=""
-            width="56px"
-            height="56px"
-            className="mr-1 w-[2.6rem]"
-          />
-          <h2 className="zissou-heading text-[1.37rem] text-tracksuit-red font-black text-shadow-[2px_2px_0px_var(--submarine-yellow)]  tracking-[0.2px]! leading-[1.1]! flex flex-col">
-            <span className="">The Archive</span>
+    <aside className="sticky top-0 h-screen p-4 flex flex-col overflow-hidden">
+      {/* Logo + Branding */}
+      <div className="flex flex-row items-start gap-1">
+        <img
+          src="/filing_cabinet2.svg"
+          alt="The Archive of Small Things"
+          width="56px"
+          height="56px"
+          className="shrink-0 w-[2.6rem]"
+        />
+        {!minimized && (
+          <h2 className="zissou-heading text-[1.37rem] text-tracksuit-red font-black text-shadow-[2px_2px_0px_var(--submarine-yellow)] tracking-[0.2px]! leading-[1.1]! flex flex-col">
+            <span>The Archive</span>
             <span className="inline-block text-[1rem]">of Small Things</span>
           </h2>
-        </div>
+        )}
+      </div>
 
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Auth */}
+      <div className="relative" ref={dropdownRef}>
         {status === "loading" ? (
           <div className="w-10 h-10 bg-cream zissou-border rounded-full" />
         ) : session ? (
-          <div className="relative" ref={dropdownRef}>
+          <>
             <button
               onClick={() => setShowDropdown(!showDropdown)}
               className="flex items-center gap-2"
@@ -60,23 +65,25 @@ export function Header({
                 fallback={session.user?.name || ""}
                 size="sm"
               />
-              <svg
-                className="w-4 h-4 text-inkstain"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
+              {!minimized && (
+                <svg
+                  className="w-4 h-4 text-inkstain"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              )}
             </button>
 
             {showDropdown && (
-              <div className="absolute right-0 top-full mt-2 bg-cream zissou-border zissou-shadow py-2 min-w-[150px]">
+              <div className="absolute left-0 bottom-full mb-2 bg-cream zissou-border zissou-shadow py-2 min-w-[150px]">
                 <a
                   href="/private"
                   className="block px-4 py-2 zissou-mono text-sm text-inkstain hover:bg-submarine-yellow/30 transition-none"
@@ -91,13 +98,13 @@ export function Header({
                 </button>
               </div>
             )}
-          </div>
+          </>
         ) : (
           <Button variant="ghost" size="sm" onClick={() => signIn("google")}>
-            Sign in
+            {minimized ? "..." : "Sign in"}
           </Button>
         )}
       </div>
-    </header>
+    </aside>
   );
 }

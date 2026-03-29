@@ -1,6 +1,6 @@
 "use client";
 
-import { Post } from "@/types/post";
+import { Post, PostImage } from "@/types/post";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { ImageGrid } from "./ImageGrid";
 import { Chip } from "../primitives/Chip";
@@ -12,6 +12,7 @@ interface PostCardProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onShare?: () => void;
+  onImageClick?: (image: PostImage) => void;
 }
 
 const ShareIcon = () => (
@@ -68,6 +69,7 @@ export function PostCard({
   onEdit,
   onDelete,
   onShare,
+  onImageClick,
 }: PostCardProps) {
   const formattedDate = new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -131,7 +133,7 @@ export function PostCard({
       {/* Images */}
       {post.images.length > 0 && (
         <div className="mb-4">
-          <ImageGrid images={post.images} expanded />
+          <ImageGrid images={post.images} expanded onImageClick={onImageClick} />
         </div>
       )}
 

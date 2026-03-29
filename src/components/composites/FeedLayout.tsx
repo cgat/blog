@@ -1,6 +1,6 @@
 "use client";
 
-import { Post } from "@/types/post";
+import { Post, PostImage } from "@/types/post";
 import { PostCard } from "./PostCard";
 import { Button } from "../primitives/Button";
 
@@ -14,6 +14,7 @@ interface FeedLayoutProps {
   onPostEdit?: (postId: string) => void;
   onPostDelete?: (postId: string) => void;
   onPostShare?: (postId: string) => void;
+  onImageClick?: (image: PostImage, post: Post) => void;
 }
 
 export function FeedLayout({
@@ -26,6 +27,7 @@ export function FeedLayout({
   onPostEdit,
   onPostDelete,
   onPostShare,
+  onImageClick,
 }: FeedLayoutProps) {
   if (posts.length === 0) {
     return (
@@ -55,6 +57,7 @@ export function FeedLayout({
           onEdit={() => onPostEdit?.(post.id)}
           onDelete={() => onPostDelete?.(post.id)}
           onShare={() => onPostShare?.(post.id)}
+          onImageClick={(image) => onImageClick?.(image, post)}
         />
       ))}
 

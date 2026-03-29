@@ -2,12 +2,13 @@
 
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useCallback } from "react";
-import { Header } from "../layout/Header";
+import { AppLayout } from "../layout/AppLayout";
 import { Composer } from "../composites/Composer";
 import { FeedLayout } from "../composites/FeedLayout";
 import { ConfirmDialog } from "../composites/ConfirmDialog";
 import { ShareMenu } from "../composites/ShareMenu";
-import { Post, PostTag } from "@/types/post";
+import { ImageViewer } from "../composites/ImageViewer";
+import { Post, PostImage, PostTag } from "@/types/post";
 
 interface FeedPageProps {
   includePrivate?: boolean;
@@ -24,6 +25,8 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [sharePostId, setSharePostId] = useState<string | null>(null);
+  const [viewerImage, setViewerImage] = useState<PostImage | null>(null);
+  const [viewerPostId, setViewerPostId] = useState<string | null>(null);
 
   const fetchPosts = useCallback(
     async (cursor?: Date, direction: "older" | "newer" = "older") => {
@@ -75,7 +78,6 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     setIsSubmitting(true);
 
     try {
-      // Upload images first
       const imageIds: string[] = [];
       for (const file of data.images) {
         const formData = new FormData();
@@ -88,7 +90,6 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
         imageIds.push(imageData.id);
       }
 
-      // Create tags and get IDs
       const tagIds: string[] = [];
       for (const tagName of data.tags) {
         const res = await fetch("/api/tags", {
@@ -100,7 +101,6 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
         tagIds.push(tagData.id);
       }
 
-      // Create post
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -124,7 +124,6 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
         ...prev,
       ]);
 
-      // Refresh tags
       await fetchTags();
     } finally {
       setIsSubmitting(false);
@@ -179,41 +178,77 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
 
   const sharePost = posts.find((p) => p.id === sharePostId);
 
+  // Image viewer navigation
+  const viewerPost = viewerPostId
+    ? posts.find((p) => p.id === viewerPostId)
+    : null;
+  const viewerImageIndex =
+    viewerPost && viewerImage
+      ? viewerPost.images.findIndex((img) => img.id === viewerImage.id)
+      : -1;
+
+  const handleImageClick = (image: PostImage, post: Post) => {
+    setViewerImage(image);
+    setViewerPostId(post.id);
+  };
+
+  const handleViewerPrev =
+    viewerPost && viewerImageIndex > 0
+      ? () => setViewerImage(viewerPost.images[viewerImageIndex - 1])
+      : undefined;
+
+  const handleViewerNext =
+    viewerPost && viewerImageIndex < viewerPost.images.length - 1
+      ? () => setViewerImage(viewerPost.images[viewerImageIndex + 1])
+      : undefined;
+
+  const handleViewerClose = () => {
+    setViewerImage(null);
+    setViewerPostId(null);
+  };
+
+  // Build panel content for AppLayout
+  const panel = viewerImage ? (
+    <ImageViewer
+      image={viewerImage}
+      onClose={handleViewerClose}
+      onPrev={handleViewerPrev}
+      onNext={handleViewerNext}
+    />
+  ) : null;
+
   return (
-    <div className="min-h-screen bg-cream">
-      <Header />
-
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {session && (
-          <div className="mb-8">
-            <Composer
-              userAvatar={session.user?.image || undefined}
-              userName={session.user?.name || undefined}
-              existingTags={tags}
-              onPublish={handlePublish}
-              isSubmitting={isSubmitting}
-            />
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="text-center py-8">
-            <p className="zissou-mono text-inkstain/60">Loading...</p>
-          </div>
-        ) : (
-          <FeedLayout
-            posts={posts}
-            isOwner={!!session}
-            hasNewer={hasNewer}
-            hasOlder={hasOlder}
-            onLoadNewer={handleLoadNewer}
-            onLoadOlder={handleLoadOlder}
-            onPostEdit={(id) => alert(`Edit ${id} - not implemented`)}
-            onPostDelete={setDeletePostId}
-            onPostShare={setSharePostId}
+    <AppLayout panel={panel}>
+      {session && (
+        <div className="mb-8">
+          <Composer
+            userAvatar={session.user?.image || undefined}
+            userName={session.user?.name || undefined}
+            existingTags={tags}
+            onPublish={handlePublish}
+            isSubmitting={isSubmitting}
           />
-        )}
-      </main>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="text-center py-8">
+          <p className="zissou-mono text-inkstain/60">Loading...</p>
+        </div>
+      ) : (
+        <FeedLayout
+          posts={posts}
+          isOwner={!!session}
+          hasNewer={hasNewer}
+          hasOlder={hasOlder}
+          onLoadNewer={handleLoadNewer}
+          onLoadOlder={handleLoadOlder}
+          onPostEdit={(id) => alert(`Edit ${id} - not implemented`)}
+          onPostDelete={setDeletePostId}
+          onPostShare={setSharePostId}
+          onImageClick={handleImageClick}
+        />
+      )}
 
       <ConfirmDialog
         isOpen={!!deletePostId}
@@ -241,6 +276,6 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
           </div>
         </div>
       )}
-    </div>
+    </AppLayout>
   );
 }

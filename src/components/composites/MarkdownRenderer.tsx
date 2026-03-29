@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { LinkPreview } from './LinkPreview';
-import type { LinkPreviewData } from '@/types/post';
+import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { LinkPreview } from "./LinkPreview";
+import type { LinkPreviewData } from "@/types/post";
 
 interface MarkdownRendererProps {
   content: string;
@@ -12,10 +12,15 @@ interface MarkdownRendererProps {
   linkPreviews?: Record<string, LinkPreviewData>;
 }
 
-export function MarkdownRenderer({ content, truncate, linkPreviews }: MarkdownRendererProps) {
-  const displayContent = truncate && content.length > truncate
-    ? content.slice(0, truncate) + '...'
-    : content;
+export function MarkdownRenderer({
+  content,
+  truncate,
+  linkPreviews,
+}: MarkdownRendererProps) {
+  const displayContent =
+    truncate && content.length > truncate
+      ? content.slice(0, truncate) + "..."
+      : content;
 
   return (
     <div className="prose max-w-none prose-a:text-deep-ocean-teal prose-headings:text-inkstain">
@@ -24,16 +29,21 @@ export function MarkdownRenderer({ content, truncate, linkPreviews }: MarkdownRe
         components={{
           p: ({ children, ...props }) => {
             const childArray = React.Children.toArray(children);
+            console.log(childArray);
             if (childArray.length === 1 && linkPreviews) {
               const child = childArray[0];
               if (
                 React.isValidElement(child) &&
-                child.type === 'a' &&
-                typeof child.props.href === 'string'
+                child.type === "a" &&
+                typeof child.props.href === "string"
               ) {
                 const href = child.props.href;
                 const text = child.props.children;
-                if (typeof text === 'string' && text === href && linkPreviews[href]) {
+                if (
+                  typeof text === "string" &&
+                  text === href &&
+                  linkPreviews[href]
+                ) {
                   const preview = linkPreviews[href];
                   return (
                     <LinkPreview
@@ -47,6 +57,7 @@ export function MarkdownRenderer({ content, truncate, linkPreviews }: MarkdownRe
                 }
               }
             }
+            console.log(props);
             return <p {...props}>{children}</p>;
           },
         }}
