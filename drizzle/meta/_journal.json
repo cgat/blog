@@ -43,6 +43,13 @@
       "when": 1773173074804,
       "tag": "0005_sturdy_romulus",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1774939871295,
+      "tag": "0006_thick_iron_fist",
+      "breakpoints": true
     }
   ]
 }

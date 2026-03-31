@@ -41,6 +41,7 @@ export const postTags = sqliteTable('post_tags', {
 export const postsRelations = relations(posts, ({ many }) => ({
   images: many(images),
   postTags: many(postTags),
+  likes: many(likes),
 }));
 
 export const imagesRelations = relations(images, ({ one }) => ({
@@ -62,6 +63,20 @@ export const postTagsRelations = relations(postTags, ({ one }) => ({
   tag: one(tags, {
     fields: [postTags.tagId],
     references: [tags.id],
+  }),
+}));
+
+export const likes = sqliteTable('likes', {
+  id: text('id').primaryKey(),
+  postId: text('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  fingerprint: text('fingerprint').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});
+
+export const likesRelations = relations(likes, ({ one }) => ({
+  post: one(posts, {
+    fields: [likes.postId],
+    references: [posts.id],
   }),
 }));
 
