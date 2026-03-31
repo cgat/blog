@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState, createContext, useContext } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 const PANEL_BREAKPOINT = 1500;
 
@@ -14,6 +15,20 @@ export function usePanelMode() {
 interface AppLayoutProps {
   children: ReactNode;
   panel?: ReactNode | null;
+}
+
+function StickyMobileHeader() {
+  const hidden = useScrollDirection();
+
+  return (
+    <div
+      className={`md:hidden sticky top-0 z-40 transition-transform duration-300 ${
+        hidden ? '-translate-y-full' : 'translate-y-0'
+      }`}
+    >
+      <Header />
+    </div>
+  );
 }
 
 export function AppLayout({ children, panel }: AppLayoutProps) {
@@ -35,9 +50,7 @@ export function AppLayout({ children, panel }: AppLayoutProps) {
     <PanelModeContext.Provider value={panelMode}>
       <div className="min-h-screen bg-cream">
         {/* Mobile: sticky header */}
-        <div className="md:hidden">
-          <Header />
-        </div>
+        <StickyMobileHeader />
 
         {/* Desktop: CSS grid layout */}
         <div
