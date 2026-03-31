@@ -156,6 +156,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     tags: string[];
     isPrivate: boolean;
     publish?: boolean;
+    publishedAt?: string;
   }) => {
     setIsSubmitting(true);
     try {
@@ -192,6 +193,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
           imageIds: allImageIds,
           isPrivate: data.isPrivate,
           publish: data.publish,
+          publishedAt: data.publishedAt,
         }),
       });
 
@@ -230,6 +232,47 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     if (res.ok) {
       // Remove from drafts view
       setPosts((prev) => prev.filter((p) => p.id !== postId));
+    }
+  };
+
+  const handleLike = async (postId: string) => {
+    // Optimistic update
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              likedByMe: !p.likedByMe,
+              likeCount: p.likedByMe ? p.likeCount - 1 : p.likeCount + 1,
+            }
+          : p
+      )
+    );
+
+    try {
+      const res = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
+      const data = await res.json();
+      // Sync with server truth
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, likeCount: data.likeCount, likedByMe: data.likedByMe }
+            : p
+        )
+      );
+    } catch {
+      // Revert on error
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? {
+                ...p,
+                likedByMe: !p.likedByMe,
+                likeCount: p.likedByMe ? p.likeCount - 1 : p.likeCount + 1,
+              }
+            : p
+        )
+      );
     }
   };
 
@@ -370,6 +413,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
                 isPrivate: post.isPrivate,
                 images: post.images.map((img) => ({ id: img.id, url: img.url })),
                 isDraft: !post.publishedAt,
+                publishedAt: post.publishedAt,
               }}
               onSave={(data) => handleSaveEdit(post.id, data)}
               onCancel={() => setEditingPostId(null)}
@@ -381,6 +425,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
           onPostDelete={setDeletePostId}
           onPostShare={setSharePostId}
           onPostPublish={(id) => handlePublishDraft(id)}
+          onPostLike={handleLike}
           onImageClick={handleImageClick}
         />
       )}

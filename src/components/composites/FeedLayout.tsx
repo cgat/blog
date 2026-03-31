@@ -18,6 +18,7 @@ interface FeedLayoutProps {
   onPostDelete?: (postId: string) => void;
   onPostShare?: (postId: string) => void;
   onPostPublish?: (postId: string) => void;
+  onPostLike?: (postId: string) => void;
   onImageClick?: (image: PostImage, post: Post) => void;
 }
 
@@ -34,6 +35,7 @@ export function FeedLayout({
   onPostDelete,
   onPostShare,
   onPostPublish,
+  onPostLike,
   onImageClick,
 }: FeedLayoutProps) {
   if (posts.length === 0) {
@@ -67,6 +69,7 @@ export function FeedLayout({
           onDelete={() => onPostDelete?.(post.id)}
           onShare={() => onPostShare?.(post.id)}
           onPublish={() => onPostPublish?.(post.id)}
+          onLike={() => onPostLike?.(post.id)}
           onImageClick={(image) => onImageClick?.(image, post)}
         />
       ))}
