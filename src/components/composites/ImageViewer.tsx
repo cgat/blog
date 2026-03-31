@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { PostImage } from "@/types/post";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePanelMode } from "../layout/AppLayout";
 
 interface ImageViewerProps {
@@ -29,7 +29,44 @@ const ThumbsUpIcon = ({ filled }: { filled?: boolean }) => (
   </svg>
 );
 
+const ThumbsDownIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10zm9-13h2a2 2 0 012 2v7a2 2 0 01-2 2h-2"
+    />
+  </svg>
+);
+
+function ShameToast({ visible }: { visible: boolean }) {
+  return (
+    <div
+      className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-300 ${
+        visible ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
+    >
+      <div className="zissou-border zissou-shadow overflow-hidden">
+        <img src="/images/shame.jpg" alt="Shame!" className="w-48" />
+      </div>
+    </div>
+  );
+}
+
 function ViewerCard({ image, onClose, onPrev, onNext, onLike }: ImageViewerProps) {
+  const [showShame, setShowShame] = useState(false);
+
+  const handleDislike = () => {
+    setShowShame(true);
+    setTimeout(() => setShowShame(false), 1000);
+  };
+
   return (
     <div className="bg-white zissou-border zissou-shadow flex flex-col">
       {/* Toolbar */}
@@ -94,6 +131,13 @@ function ViewerCard({ image, onClose, onPrev, onNext, onLike }: ImageViewerProps
             )}
           </button>
           <button
+            onClick={handleDislike}
+            className="p-1 text-inkstain/30 hover:text-inkstain/60 transition-transform duration-150 active:scale-110"
+            aria-label="Dislike"
+          >
+            <ThumbsDownIcon />
+          </button>
+          <button
             onClick={onClose}
             className="p-1 text-inkstain/40 hover:text-tracksuit-red transition-colors"
             aria-label="Close"
@@ -134,6 +178,7 @@ function ViewerCard({ image, onClose, onPrev, onNext, onLike }: ImageViewerProps
           </p>
         </div>
       )}
+      <ShameToast visible={showShame} />
     </div>
   );
 }
