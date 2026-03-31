@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Post, PostImage } from "@/types/post";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { ImageGrid } from "./ImageGrid";
@@ -143,6 +143,14 @@ export function PostCard({
   onImageClick,
 }: PostCardProps) {
   const [showShame, setShowShame] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [charLimit, setCharLimit] = useState(800);
+
+  useEffect(() => {
+    setCharLimit(window.innerWidth < 768 ? 300 : 800);
+  }, []);
+
+  const isTruncatable = post.content.length > charLimit;
 
   const handleDislike = () => {
     setShowShame(true);
@@ -224,8 +232,17 @@ export function PostCard({
       <div className="mb-4">
         <MarkdownRenderer
           content={post.content}
+          truncate={!expanded && isTruncatable ? charLimit : undefined}
           linkPreviews={post.linkPreviews}
         />
+        {isTruncatable && !expanded && (
+          <button
+            onClick={() => setExpanded(true)}
+            className="zissou-mono text-xs text-deep-ocean-teal hover:text-tracksuit-red mt-2 uppercase"
+          >
+            Read more
+          </button>
+        )}
       </div>
 
       {/* Images */}
