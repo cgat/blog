@@ -347,6 +347,42 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     setViewerPostId(null);
   };
 
+  const handleImageLike = async () => {
+    if (!viewerImage || !viewerPostId) return;
+    const imageId = viewerImage.id;
+
+    // Optimistic update
+    const updateImageLike = (liked: boolean, count: number) => {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === viewerPostId
+            ? {
+                ...p,
+                images: p.images.map((img) =>
+                  img.id === imageId ? { ...img, likedByMe: liked, likeCount: count } : img
+                ),
+              }
+            : p
+        )
+      );
+      setViewerImage((prev) =>
+        prev && prev.id === imageId ? { ...prev, likedByMe: liked, likeCount: count } : prev
+      );
+    };
+
+    const wasLiked = viewerImage.likedByMe;
+    const newCount = wasLiked ? viewerImage.likeCount - 1 : viewerImage.likeCount + 1;
+    updateImageLike(!wasLiked, newCount);
+
+    try {
+      const res = await fetch(`/api/image-likes/${imageId}`, { method: 'POST' });
+      const data = await res.json();
+      updateImageLike(data.likedByMe, data.likeCount);
+    } catch {
+      updateImageLike(wasLiked, viewerImage.likeCount);
+    }
+  };
+
   // Build panel content for AppLayout
   const panel = viewerImage ? (
     <ImageViewer
@@ -354,6 +390,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
       onClose={handleViewerClose}
       onPrev={handleViewerPrev}
       onNext={handleViewerNext}
+      onLike={handleImageLike}
     />
   ) : null;
 

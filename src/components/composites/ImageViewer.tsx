@@ -10,9 +10,26 @@ interface ImageViewerProps {
   onClose: () => void;
   onPrev?: () => void;
   onNext?: () => void;
+  onLike?: () => void;
 }
 
-function ViewerCard({ image, onClose, onPrev, onNext }: ImageViewerProps) {
+const ThumbsUpIcon = ({ filled }: { filled?: boolean }) => (
+  <svg
+    className="w-5 h-5"
+    fill={filled ? "currentColor" : "none"}
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zm-9 11H3a2 2 0 01-2-2v-7a2 2 0 012-2h2"
+    />
+  </svg>
+);
+
+function ViewerCard({ image, onClose, onPrev, onNext, onLike }: ImageViewerProps) {
   return (
     <div className="bg-white zissou-border zissou-shadow flex flex-col">
       {/* Toolbar */}
@@ -61,25 +78,41 @@ function ViewerCard({ image, onClose, onPrev, onNext }: ImageViewerProps) {
             </button>
           )}
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 text-inkstain/40 hover:text-tracksuit-red transition-colors"
-          aria-label="Close"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onLike}
+            className={`flex items-center gap-1 p-1 transition-transform duration-150 active:scale-110 ${
+              image.likedByMe
+                ? 'text-deep-ocean-teal'
+                : 'text-inkstain/30 hover:text-inkstain/60'
+            }`}
+            aria-label="Like"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+            <ThumbsUpIcon filled={image.likedByMe} />
+            {image.likeCount > 0 && (
+              <span className="zissou-mono text-xs">{image.likeCount}</span>
+            )}
+          </button>
+          <button
+            onClick={onClose}
+            className="p-1 text-inkstain/40 hover:text-tracksuit-red transition-colors"
+            aria-label="Close"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Image */}
@@ -110,6 +143,7 @@ export function ImageViewer({
   onClose,
   onPrev,
   onNext,
+  onLike,
 }: ImageViewerProps) {
   const mode = usePanelMode();
 
@@ -130,6 +164,7 @@ export function ImageViewer({
         onClose={onClose}
         onPrev={onPrev}
         onNext={onNext}
+        onLike={onLike}
       />
     );
   }

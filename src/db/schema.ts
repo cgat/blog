@@ -44,11 +44,12 @@ export const postsRelations = relations(posts, ({ many }) => ({
   likes: many(likes),
 }));
 
-export const imagesRelations = relations(images, ({ one }) => ({
+export const imagesRelations = relations(images, ({ one, many }) => ({
   post: one(posts, {
     fields: [images.postId],
     references: [posts.id],
   }),
+  imageLikes: many(imageLikes),
 }));
 
 export const tagsRelations = relations(tags, ({ many }) => ({
@@ -79,6 +80,22 @@ export const likesRelations = relations(likes, ({ one }) => ({
   post: one(posts, {
     fields: [likes.postId],
     references: [posts.id],
+  }),
+}));
+
+export const imageLikes = sqliteTable('image_likes', {
+  id: text('id').primaryKey(),
+  imageId: text('image_id').notNull().references(() => images.id, { onDelete: 'cascade' }),
+  fingerprint: text('fingerprint').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+}, (table) => [
+  uniqueIndex('image_likes_image_fingerprint_idx').on(table.imageId, table.fingerprint),
+]);
+
+export const imageLikesRelations = relations(imageLikes, ({ one }) => ({
+  image: one(images, {
+    fields: [imageLikes.imageId],
+    references: [images.id],
   }),
 }));
 

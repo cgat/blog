@@ -6,6 +6,8 @@ export interface PostImage {
   featured?: boolean;
   width: number;
   height: number;
+  likeCount: number;
+  likedByMe: boolean;
 }
 
 export interface PostTag {

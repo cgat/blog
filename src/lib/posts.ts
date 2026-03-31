@@ -3,7 +3,7 @@ import { posts, images, postTags, likes } from '@/db/schema';
 import { eq, desc, lt, gt, and, isNull, isNotNull } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import { extractBareUrls, getLinkPreviewsForUrls, processPostLinkPreviews } from '@/lib/link-previews';
-import { getLikeCount, getLikeCounts, getLikedPostIds } from '@/lib/likes';
+import { getLikeCount, getLikeCounts, getLikedPostIds, getImageLikeCounts, getLikedImageIds } from '@/lib/likes';
 
 export interface CreatePostInput {
   content: string;
@@ -29,6 +29,8 @@ export interface PostWithRelations {
     height: number;
     caption?: string;
     featured?: boolean;
+    likeCount: number;
+    likedByMe: boolean;
   }[];
   tags: {
     id: string;
@@ -113,6 +115,11 @@ export async function getPost(id: string, options?: { includePrivate?: boolean; 
     likedByMe = !!existingLike;
   }
 
+  // Image like data
+  const imageIds = result.images.map((img) => img.id);
+  const imgLikeCounts = await getImageLikeCounts(imageIds);
+  const imgLikedIds = fingerprint ? await getLikedImageIds(imageIds, fingerprint) : new Set<string>();
+
   return {
     id: result.id,
     content: result.content,
@@ -130,6 +137,8 @@ export async function getPost(id: string, options?: { includePrivate?: boolean; 
       height: img.height,
       caption: img.caption ?? undefined,
       featured: img.featured || undefined,
+      likeCount: imgLikeCounts[img.id] || 0,
+      likedByMe: imgLikedIds.has(img.id),
     })),
     tags: result.postTags.map((pt) => ({
       id: pt.tag.id,
@@ -211,6 +220,11 @@ export async function getPosts(options: {
   const likeCounts = await getLikeCounts(postIds);
   const likedIds = fingerprint ? await getLikedPostIds(postIds, fingerprint) : new Set<string>();
 
+  // Batch-fetch image like data
+  const allImageIds = postsToReturn.flatMap((p) => p.images.map((img) => img.id));
+  const imgLikeCounts = await getImageLikeCounts(allImageIds);
+  const imgLikedIds = fingerprint ? await getLikedImageIds(allImageIds, fingerprint) : new Set<string>();
+
   return {
     posts: postsToReturn.map((result) => {
       const postUrls = extractBareUrls(result.content);
@@ -237,6 +251,8 @@ export async function getPosts(options: {
           width: img.width,
           height: img.height,
           caption: img.caption ?? undefined,
+          likeCount: imgLikeCounts[img.id] || 0,
+          likedByMe: imgLikedIds.has(img.id),
         })),
         tags: result.postTags.map((pt) => ({
           id: pt.tag.id,

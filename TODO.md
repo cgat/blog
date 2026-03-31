@@ -6,10 +6,10 @@ A list of high level tasks that need to be worked on.
   - [] Once the themability is in place, create a theme for "The Little Picture" tag. This includes generating a new logo (blocky wes anderson style camera). Palette is mostly blue tones.
 - [x] register archiveofsmallthings.xyz. Setup SSL (let's encrypt) and make it all work with hetzner and Coolify
 - [] Ensure we have a easy database backup scheme
-- [] Add anonymous post and photo likes.
+- [x] Add anonymous post and photo likes.
 - [] Add the ability for anonymous users to comment on posts or photos. Comments can be public or private. Commenters can add a name of a max length of 30 characters.
 - [] Set max height of the photo viewer cotainer to be 98vh
-- [] Sticky mobile nav header (scroll responsive header which responds the scroll direction)
+- [x] Sticky mobile nav header (scroll responsive header which responds the scroll direction)
 - [] Add Tag cards to navigation sections.
 - [x] Allow ability to edit publishedAt date.
 - [x] Make the Movie review previews smaller (max width half the max width of the feed). Don't show the link preview description if the letterboxd url contains "review".

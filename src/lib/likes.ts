@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { likes } from '@/db/schema';
+import { likes, imageLikes } from '@/db/schema';
 import { eq, and, count, inArray } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import { createHash } from 'crypto';
@@ -80,4 +80,74 @@ export async function getLikedPostIds(
 
   const likedSet = new Set(results.map((r) => r.postId));
   return new Set(postIds.filter((id) => likedSet.has(id)));
+}
+
+// Image likes
+
+export async function toggleImageLike(
+  imageId: string,
+  fingerprint: string
+): Promise<{ likeCount: number; likedByMe: boolean }> {
+  const existing = await db
+    .select()
+    .from(imageLikes)
+    .where(and(eq(imageLikes.imageId, imageId), eq(imageLikes.fingerprint, fingerprint)))
+    .get();
+
+  if (existing) {
+    await db.delete(imageLikes).where(eq(imageLikes.id, existing.id));
+  } else {
+    await db.insert(imageLikes).values({
+      id: uuid(),
+      imageId,
+      fingerprint,
+      createdAt: new Date(),
+    });
+  }
+
+  const likeCount = await getImageLikeCount(imageId);
+  return { likeCount, likedByMe: !existing };
+}
+
+export async function getImageLikeCount(imageId: string): Promise<number> {
+  const result = await db
+    .select({ count: count() })
+    .from(imageLikes)
+    .where(eq(imageLikes.imageId, imageId))
+    .get();
+
+  return result?.count ?? 0;
+}
+
+export async function getImageLikeCounts(
+  imageIds: string[]
+): Promise<Record<string, number>> {
+  if (imageIds.length === 0) return {};
+
+  const results = await db
+    .select({ imageId: imageLikes.imageId, count: count() })
+    .from(imageLikes)
+    .where(inArray(imageLikes.imageId, imageIds))
+    .groupBy(imageLikes.imageId)
+    .all();
+
+  const map: Record<string, number> = {};
+  for (const id of imageIds) map[id] = 0;
+  for (const row of results) map[row.imageId] = row.count;
+  return map;
+}
+
+export async function getLikedImageIds(
+  imageIds: string[],
+  fingerprint: string
+): Promise<Set<string>> {
+  if (imageIds.length === 0) return new Set();
+
+  const results = await db
+    .select({ imageId: imageLikes.imageId })
+    .from(imageLikes)
+    .where(and(eq(imageLikes.fingerprint, fingerprint), inArray(imageLikes.imageId, imageIds)))
+    .all();
+
+  return new Set(results.map((r) => r.imageId));
 }
