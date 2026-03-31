@@ -16,6 +16,7 @@ interface PostCardProps {
   onDelete?: () => void;
   onShare?: () => void;
   onPublish?: () => void;
+  onLike?: () => void;
   onImageClick?: (image: PostImage) => void;
 }
 
@@ -83,6 +84,22 @@ const TrashIcon = () => (
   </svg>
 );
 
+const ThumbsUpIcon = ({ filled }: { filled?: boolean }) => (
+  <svg
+    className="w-5 h-5"
+    fill={filled ? "currentColor" : "none"}
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zm-9 11H3a2 2 0 01-2-2v-7a2 2 0 012-2h2"
+    />
+  </svg>
+);
+
 export function PostCard({
   post,
   isOwner = false,
@@ -92,6 +109,7 @@ export function PostCard({
   onDelete,
   onShare,
   onPublish,
+  onLike,
   onImageClick,
 }: PostCardProps) {
   if (isEditing && editComposer) {
@@ -188,6 +206,23 @@ export function PostCard({
           ))}
         </div>
       )}
+
+      {/* Likes */}
+      <div className="flex items-center gap-2 mt-3">
+        <button
+          onClick={onLike}
+          className={`flex items-center gap-1.5 transition-transform duration-150 active:scale-110 ${
+            post.likedByMe
+              ? 'text-deep-ocean-teal'
+              : 'text-inkstain/30 hover:text-inkstain/60'
+          }`}
+        >
+          <ThumbsUpIcon filled={post.likedByMe} />
+          {post.likeCount > 0 && (
+            <span className="zissou-mono text-xs">{post.likeCount}</span>
+          )}
+        </button>
+      </div>
     </article>
   );
 }
