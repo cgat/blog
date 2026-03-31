@@ -16,7 +16,6 @@ interface FeedLayoutProps {
   onLoadOlder?: () => void;
   onPostEdit?: (postId: string) => void;
   onPostDelete?: (postId: string) => void;
-  onPostShare?: (postId: string) => void;
   onPostPublish?: (postId: string) => void;
   onPostLike?: (postId: string) => void;
   onImageClick?: (image: PostImage, post: Post) => void;
@@ -33,7 +32,6 @@ export function FeedLayout({
   onLoadOlder,
   onPostEdit,
   onPostDelete,
-  onPostShare,
   onPostPublish,
   onPostLike,
   onImageClick,
@@ -67,7 +65,7 @@ export function FeedLayout({
           editComposer={editingPostId === post.id ? renderEditComposer?.(post) : undefined}
           onEdit={() => onPostEdit?.(post.id)}
           onDelete={() => onPostDelete?.(post.id)}
-          onShare={() => onPostShare?.(post.id)}
+
           onPublish={() => onPostPublish?.(post.id)}
           onLike={() => onPostLike?.(post.id)}
           onImageClick={(image) => onImageClick?.(image, post)}

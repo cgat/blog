@@ -6,7 +6,7 @@ import { AppLayout } from "../layout/AppLayout";
 import { Composer } from "../composites/Composer";
 import { FeedLayout } from "../composites/FeedLayout";
 import { ConfirmDialog } from "../composites/ConfirmDialog";
-import { ShareMenu } from "../composites/ShareMenu";
+
 import { ImageViewer } from "../composites/ImageViewer";
 import { Post, PostImage, PostTag } from "@/types/post";
 
@@ -26,7 +26,6 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
   const [showDrafts, setShowDrafts] = useState(false);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
-  const [sharePostId, setSharePostId] = useState<string | null>(null);
   const [viewerImage, setViewerImage] = useState<PostImage | null>(null);
   const [viewerPostId, setViewerPostId] = useState<string | null>(null);
 
@@ -316,7 +315,6 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     );
   };
 
-  const sharePost = posts.find((p) => p.id === sharePostId);
 
   // Image viewer navigation
   const viewerPost = viewerPostId
@@ -460,7 +458,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
           onLoadOlder={handleLoadOlder}
           onPostEdit={setEditingPostId}
           onPostDelete={setDeletePostId}
-          onPostShare={setSharePostId}
+
           onPostPublish={(id) => handlePublishDraft(id)}
           onPostLike={handleLike}
           onImageClick={handleImageClick}
@@ -477,22 +475,6 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
         onCancel={() => setDeletePostId(null)}
       />
 
-      {sharePost && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-inkstain/50"
-            onClick={() => setSharePostId(null)}
-          />
-          <div className="relative">
-            <ShareMenu
-              postUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/posts/${sharePost.id}`}
-              postTitle={sharePost.content.slice(0, 60)}
-              isOpen={true}
-              onClose={() => setSharePostId(null)}
-            />
-          </div>
-        </div>
-      )}
     </AppLayout>
   );
 }

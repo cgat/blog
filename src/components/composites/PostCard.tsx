@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from "react";
 import { Post, PostImage } from "@/types/post";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { ImageGrid } from "./ImageGrid";
+import { ShareMenu } from "./ShareMenu";
 import { Chip } from "../primitives/Chip";
 import { IconButton } from "../primitives/IconButton";
 
@@ -14,7 +15,6 @@ interface PostCardProps {
   editComposer?: ReactNode;
   onEdit?: () => void;
   onDelete?: () => void;
-  onShare?: () => void;
   onPublish?: () => void;
   onLike?: () => void;
   onImageClick?: (image: PostImage) => void;
@@ -137,13 +137,13 @@ export function PostCard({
   editComposer,
   onEdit,
   onDelete,
-  onShare,
   onPublish,
   onLike,
   onImageClick,
 }: PostCardProps) {
   const [showShame, setShowShame] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [charLimit, setCharLimit] = useState(800);
 
   useEffect(() => {
@@ -206,7 +206,15 @@ export function PostCard({
           )}
         </div>
         <div className="flex gap-1">
-          <IconButton icon={<ShareIcon />} label="Share" onClick={onShare} />
+          <div className="relative">
+            <IconButton icon={<ShareIcon />} label="Share" onClick={() => setShowShareMenu(!showShareMenu)} />
+            <ShareMenu
+              postUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/posts/${post.id}`}
+              postTitle={post.content.slice(0, 60)}
+              isOpen={showShareMenu}
+              onClose={() => setShowShareMenu(false)}
+            />
+          </div>
           {isOwner && (
             <>
               {!post.publishedAt && onPublish && (
