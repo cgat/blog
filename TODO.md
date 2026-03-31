@@ -1,0 +1,22 @@
+A list of high level tasks that need to be worked on.
+
+- [] In the composer, we need a better tag adding UI component. Likely a searchable combobox. This isn't blog viewer facing, so lower priority
+- [] Add a small delight element that is interlocked gears turning. This codepen example should be reference for implementation (https://codepen.io/LindsayMac/pen/MwrONL). If you can't access the code ask me to provide it. We'll use the 2 gear solution, though we'll have to figure out placement. In our case, I'd like this element to turn at the pace scrolling and when something is being fetched or a specific animation triggers it.
+- [] Make the site themeable. Themes can be stored as code or json (we don't need a UI). Things that should be themable: site logo, site name that appears in header (e.g the archive of small things), the component used to render the site name that appears in the header, the color palette, the background colour, navigation card bg colour, post bg colour.
+  - [] Once the themability is in place, create a theme for "The Little Picture" tag. This includes generating a new logo (blocky wes anderson style camera). Palette is mostly blue tones.
+- [x] register archiveofsmallthings.xyz. Setup SSL (let's encrypt) and make it all work with hetzner and Coolify
+- [] Ensure we have a easy database backup scheme
+- [] Add anonymous post and photo likes.
+- [] Add the ability for anonymous users to comment on posts or photos. Comments can be public or private. Commenters can add a name of a max length of 30 characters.
+- [] Set max height of the photo viewer cotainer to be 98vh
+- [] Sticky mobile nav header (scroll responsive header which responds the scroll direction)
+- [] Add Tag cards to navigation sections.
+- [x] Allow ability to edit publishedAt date.
+- [x] Make the Movie review previews smaller (max width half the max width of the feed). Don't show the link preview description if the letterboxd url contains "review".
+- [] Add favicon
+- [] Add blog metadata, open graph image (use ImageResponse)
+- [] Add accent/delight zsolnay tiles
+- [] Add "read more" expand (max chars) on mobile
+- [] Add ability to add captions to photos for signed in user
+- [] Add quirky guestbook. Allow private and public messages
+- [] Improve db migration setup in coolify (currently very manual )

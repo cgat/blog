@@ -44,6 +44,9 @@ export function MarkdownRenderer({
                   linkPreviews[href]
                 ) {
                   const preview = linkPreviews[href];
+                  const isLetterboxdReview =
+                    href.includes("letterboxd.com") &&
+                    href.includes("/gatman_returns");
                   return (
                     <LinkPreview
                       url={preview.url}
@@ -51,6 +54,7 @@ export function MarkdownRenderer({
                       description={preview.description}
                       imageUrl={preview.imageUrl}
                       domain={preview.domain}
+                      compact={isLetterboxdReview}
                     />
                   );
                 }

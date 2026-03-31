@@ -29,6 +29,7 @@ interface ComposerProps {
     isPrivate: boolean;
     images: { id: string; url: string }[];
     isDraft: boolean;
+    publishedAt?: Date | null;
   };
   onSave?: (data: {
     content: string;
@@ -37,6 +38,7 @@ interface ComposerProps {
     tags: string[];
     isPrivate: boolean;
     publish?: boolean;
+    publishedAt?: string;
   }) => void | Promise<void>;
   onCancel?: () => void;
 }
@@ -128,6 +130,16 @@ export function Composer({
   const [existingImages, setExistingImages] = useState(editPost?.images ?? []);
   const [newTag, setNewTag] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
+  const [publishedAt, setPublishedAt] = useState(() => {
+    if (!editPost?.publishedAt) return "";
+    const d = new Date(editPost.publishedAt);
+    // Format as datetime-local value: YYYY-MM-DDTHH:MM
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0') + 'T' +
+      String(d.getHours()).padStart(2, '0') + ':' +
+      String(d.getMinutes()).padStart(2, '0');
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Content search state
@@ -198,6 +210,7 @@ export function Composer({
       tags: selectedTags,
       isPrivate,
       publish,
+      publishedAt: publishedAt || undefined,
     });
   };
 
@@ -513,6 +526,15 @@ export function Composer({
           />
           {editPost ? (
             <div className="flex items-center gap-2">
+              {!editPost.isDraft && (
+                <input
+                  type="datetime-local"
+                  value={publishedAt}
+                  onChange={(e) => setPublishedAt(e.target.value)}
+                  className="px-2 py-1 zissou-mono text-xs border-0 border-b-2 border-dashed border-inkstain bg-transparent focus:outline-none focus:border-solid"
+                  title="Published date"
+                />
+              )}
               <Button variant="ghost" onClick={onCancel}>Cancel</Button>
               {editPost.isDraft && (
                 <Button onClick={() => handleSave(true)}>Publish</Button>

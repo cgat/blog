@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `likes_post_fingerprint_idx` ON `likes` (`post_id`,`fingerprint`);

@@ -24,8 +24,18 @@ function ViewerCard({ image, onClose, onPrev, onNext }: ImageViewerProps) {
               className="p-1 text-inkstain/40 hover:text-inkstain transition-colors"
               aria-label="Previous image"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
           )}
@@ -35,8 +45,18 @@ function ViewerCard({ image, onClose, onPrev, onNext }: ImageViewerProps) {
               className="p-1 text-inkstain/40 hover:text-inkstain transition-colors"
               aria-label="Next image"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           )}
@@ -46,8 +66,18 @@ function ViewerCard({ image, onClose, onPrev, onNext }: ImageViewerProps) {
           className="p-1 text-inkstain/40 hover:text-tracksuit-red transition-colors"
           aria-label="Close"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -75,7 +105,12 @@ function ViewerCard({ image, onClose, onPrev, onNext }: ImageViewerProps) {
   );
 }
 
-export function ImageViewer({ image, onClose, onPrev, onNext }: ImageViewerProps) {
+export function ImageViewer({
+  image,
+  onClose,
+  onPrev,
+  onNext,
+}: ImageViewerProps) {
   const mode = usePanelMode();
 
   useEffect(() => {
@@ -89,14 +124,26 @@ export function ImageViewer({ image, onClose, onPrev, onNext }: ImageViewerProps
   }, [onClose, onPrev, onNext]);
 
   if (mode === "inline") {
-    return <ViewerCard image={image} onClose={onClose} onPrev={onPrev} onNext={onNext} />;
+    return (
+      <ViewerCard
+        image={image}
+        onClose={onClose}
+        onPrev={onPrev}
+        onNext={onNext}
+      />
+    );
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-inkstain/60" onClick={onClose} />
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <ViewerCard image={image} onClose={onClose} onPrev={onPrev} onNext={onNext} />
+        <ViewerCard
+          image={image}
+          onClose={onClose}
+          onPrev={onPrev}
+          onNext={onNext}
+        />
       </div>
     </div>
   );

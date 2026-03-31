@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
 export const posts = sqliteTable('posts', {
@@ -71,7 +71,9 @@ export const likes = sqliteTable('likes', {
   postId: text('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
   fingerprint: text('fingerprint').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-});
+}, (table) => [
+  uniqueIndex('likes_post_fingerprint_idx').on(table.postId, table.fingerprint),
+]);
 
 export const likesRelations = relations(likes, ({ one }) => ({
   post: one(posts, {
