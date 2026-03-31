@@ -30,6 +30,8 @@ export interface Post {
   tags: PostTag[];
   linkPreviews: Record<string, LinkPreviewData>;
   isPrivate: boolean;
+  likeCount: number;
+  likedByMe: boolean;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;

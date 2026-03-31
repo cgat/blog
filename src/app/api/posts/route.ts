@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createPost, getPosts } from '@/lib/posts';
 import { auth } from '@/auth';
+import { computeFingerprint } from '@/lib/likes';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -16,6 +17,10 @@ export async function GET(request: NextRequest) {
   const includePrivate = includePrivateParam && !!session;
   const showDrafts = draftsOnly && !!session;
 
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+  const userAgent = request.headers.get('user-agent') || 'unknown';
+  const fingerprint = computeFingerprint(ip, userAgent);
+
   const result = await getPosts({
     limit,
     cursor: cursor ? new Date(cursor) : undefined,
@@ -23,6 +28,7 @@ export async function GET(request: NextRequest) {
     tagSlugs: tags,
     includePrivate,
     draftsOnly: showDrafts,
+    fingerprint,
   });
 
   return NextResponse.json(result);

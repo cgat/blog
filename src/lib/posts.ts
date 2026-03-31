@@ -1,8 +1,9 @@
 import { db } from '@/db';
-import { posts, images, postTags } from '@/db/schema';
+import { posts, images, postTags, likes } from '@/db/schema';
 import { eq, desc, lt, gt, and, isNull, isNotNull } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import { extractBareUrls, getLinkPreviewsForUrls, processPostLinkPreviews } from '@/lib/link-previews';
+import { getLikeCount, getLikeCounts, getLikedPostIds } from '@/lib/likes';
 
 export interface CreatePostInput {
   content: string;
@@ -16,6 +17,8 @@ export interface PostWithRelations {
   content: string;
   type: 'text' | 'photo';
   isPrivate: boolean;
+  likeCount: number;
+  likedByMe: boolean;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -72,9 +75,10 @@ export async function createPost(input: CreatePostInput, imageIds: string[] = []
   return getPost(id, { includePrivate: true, includeDrafts: true }) as Promise<PostWithRelations>;
 }
 
-export async function getPost(id: string, options?: { includePrivate?: boolean; includeDrafts?: boolean }): Promise<PostWithRelations | null> {
+export async function getPost(id: string, options?: { includePrivate?: boolean; includeDrafts?: boolean; fingerprint?: string }): Promise<PostWithRelations | null> {
   const includePrivate = options?.includePrivate ?? false;
   const includeDrafts = options?.includeDrafts ?? false;
+  const fingerprint = options?.fingerprint;
   const whereConditions = [eq(posts.id, id)];
   if (!includePrivate) {
     whereConditions.push(eq(posts.isPrivate, false));
@@ -100,11 +104,22 @@ export async function getPost(id: string, options?: { includePrivate?: boolean; 
   const urls = extractBareUrls(result.content);
   const linkPreviewData = await getLinkPreviewsForUrls(urls);
 
+  const likeCount = await getLikeCount(id);
+  let likedByMe = false;
+  if (fingerprint) {
+    const existingLike = await db.query.likes.findFirst({
+      where: and(eq(likes.postId, id), eq(likes.fingerprint, fingerprint)),
+    });
+    likedByMe = !!existingLike;
+  }
+
   return {
     id: result.id,
     content: result.content,
     type: result.type,
     isPrivate: result.isPrivate,
+    likeCount,
+    likedByMe,
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
     publishedAt: result.publishedAt,
@@ -132,8 +147,9 @@ export async function getPosts(options: {
   tagSlugs?: string[];
   includePrivate?: boolean;
   draftsOnly?: boolean;
+  fingerprint?: string;
 }): Promise<{ posts: PostWithRelations[]; hasMore: boolean }> {
-  const { limit = 20, cursor, direction = 'older', tagSlugs, includePrivate = false, draftsOnly = false } = options;
+  const { limit = 20, cursor, direction = 'older', tagSlugs, includePrivate = false, draftsOnly = false, fingerprint } = options;
 
   const whereConditions = [];
 
@@ -190,6 +206,11 @@ export async function getPosts(options: {
   const allUrls = postsToReturn.flatMap((result) => extractBareUrls(result.content));
   const linkPreviewData = await getLinkPreviewsForUrls([...new Set(allUrls)]);
 
+  // Batch-fetch like data for all posts
+  const postIds = postsToReturn.map(p => p.id);
+  const likeCounts = await getLikeCounts(postIds);
+  const likedIds = fingerprint ? await getLikedPostIds(postIds, fingerprint) : new Set<string>();
+
   return {
     posts: postsToReturn.map((result) => {
       const postUrls = extractBareUrls(result.content);
@@ -205,6 +226,8 @@ export async function getPosts(options: {
         content: result.content,
         type: result.type,
         isPrivate: result.isPrivate,
+        likeCount: likeCounts[result.id] || 0,
+        likedByMe: likedIds.has(result.id),
         createdAt: result.createdAt,
         updatedAt: result.updatedAt,
         publishedAt: result.publishedAt,
@@ -227,7 +250,7 @@ export async function getPosts(options: {
   };
 }
 
-export async function updatePost(id: string, input: Partial<CreatePostInput> & { publish?: boolean; imageIds?: string[] }): Promise<PostWithRelations | null> {
+export async function updatePost(id: string, input: Partial<CreatePostInput> & { publish?: boolean; imageIds?: string[]; publishedAt?: string }): Promise<PostWithRelations | null> {
   const existing = await getPost(id, { includePrivate: true, includeDrafts: true });
   if (!existing) return null;
 
@@ -235,6 +258,7 @@ export async function updatePost(id: string, input: Partial<CreatePostInput> & {
   if (input.content !== undefined) updateFields.content = input.content;
   if (input.isPrivate !== undefined) updateFields.isPrivate = input.isPrivate;
   if (input.publish) updateFields.publishedAt = new Date();
+  if (input.publishedAt) updateFields.publishedAt = new Date(input.publishedAt);
 
   // Update post type based on images
   if (input.imageIds !== undefined) {
