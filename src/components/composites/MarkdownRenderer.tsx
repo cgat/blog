@@ -27,6 +27,16 @@ export function MarkdownRenderer({
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
+          img: ({ src, alt, ...props }) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={src}
+              alt={alt || ""}
+              className="rounded-lg max-w-full h-auto mx-auto my-4"
+              loading="lazy"
+              {...props}
+            />
+          ),
           p: ({ children, node, ...props }) => {
             const childArray = React.Children.toArray(children);
             if (childArray.length === 1 && linkPreviews) {
