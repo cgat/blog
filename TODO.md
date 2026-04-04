@@ -13,10 +13,12 @@ A list of high level tasks that need to be worked on.
 - [] Add Tag cards to navigation sections.
 - [x] Allow ability to edit publishedAt date.
 - [x] Make the Movie review previews smaller (max width half the max width of the feed). Don't show the link preview description if the letterboxd url contains "review".
-- [] Add favicon
+- [x] Add favicon
 - [] Add blog metadata, open graph image (use ImageResponse)
 - [] Add accent/delight zsolnay tiles
-- [] Add "read more" expand (max chars) on mobile
+- [x] Add "read more" expand (max chars) on mobile
 - [] Add ability to add captions to photos for signed in user
 - [] Add quirky guestbook. Allow private and public messages
 - [] Improve db migration setup in coolify (currently very manual )
+- [x] Fix Copy Link in share. It's not working on iOS safari (at least)
+- [] Migrate Blogger content to archive of small things
