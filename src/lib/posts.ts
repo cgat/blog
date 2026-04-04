@@ -204,7 +204,7 @@ export async function getPosts(options: {
   let filteredResults = results;
   if (tagSlugs && tagSlugs.length > 0) {
     filteredResults = results.filter((post) =>
-      post.postTags.some((pt) => tagSlugs.includes(pt.tag.slug))
+      post.postTags.some((pt) => tagSlugs.includes(pt.tag.slug) || tagSlugs.includes(pt.tag.name))
     );
   }
 
