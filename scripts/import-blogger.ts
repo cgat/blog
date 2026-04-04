@@ -15,14 +15,12 @@ import { eq } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import sharp from 'sharp';
 
-const FEED_PATH = resolve(
+const BLOGGER_DIR = process.env.BLOGGER_DIR || resolve(
   process.env.HOME!,
-  'Downloads/Takeout/Blogger/Blogs/The Off Season Traveller/feed.atom'
+  'Downloads/Takeout/Blogger'
 );
-const ALBUM_PATH = resolve(
-  process.env.HOME!,
-  'Downloads/Takeout/Blogger/Albums/The Off Season Traveller'
-);
+const FEED_PATH = resolve(BLOGGER_DIR, 'Blogs/The Off Season Traveller/feed.atom');
+const ALBUM_PATH = resolve(BLOGGER_DIR, 'Albums/The Off Season Traveller');
 const UPLOADS_DIR = resolve(process.cwd(), 'uploads');
 
 const DRY_RUN = process.argv.includes('--dry-run');
