@@ -3,14 +3,23 @@
 import { useState, useRef, useEffect } from "react";
 import { NavCards } from "../composites/NavCards";
 
-export function Header() {
+interface HeaderProps {
+  onNavToggle?: (open: boolean) => void;
+}
+
+export function Header({ onNavToggle }: HeaderProps) {
   const [showNav, setShowNav] = useState(false);
+
+  const toggleNav = (open: boolean) => {
+    setShowNav(open);
+    onNavToggle?.(open);
+  };
   const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        setShowNav(false);
+        toggleNav(false);
       }
     };
 
@@ -37,7 +46,7 @@ export function Header() {
 
         {/* Folder tab toggle */}
         <button
-          onClick={() => setShowNav(!showNav)}
+          onClick={() => toggleNav(!showNav)}
           className="p-2 hover:bg-submarine-yellow/20 transition-none"
           aria-label="Navigation"
         >
@@ -61,7 +70,7 @@ export function Header() {
 
       {/* Expandable nav tray */}
       {showNav && (
-        <div className="border-t-2 border-inkstain px-4 py-3">
+        <div className="py-3 overflow-x-auto">
           <NavCards horizontal />
         </div>
       )}

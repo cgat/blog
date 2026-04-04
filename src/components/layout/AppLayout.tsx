@@ -19,14 +19,15 @@ interface AppLayoutProps {
 
 function StickyMobileHeader() {
   const hidden = useScrollDirection();
+  const [navOpen, setNavOpen] = useState(false);
 
   return (
     <div
       className={`md:hidden sticky top-0 z-40 transition-transform duration-300 ${
-        hidden ? '-translate-y-full' : 'translate-y-0'
+        hidden && !navOpen ? '-translate-y-full' : 'translate-y-0'
       }`}
     >
-      <Header />
+      <Header onNavToggle={setNavOpen} />
     </div>
   );
 }

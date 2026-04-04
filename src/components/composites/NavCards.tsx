@@ -4,10 +4,12 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 const NAV_ITEMS = [
-  { emoji: "📬", label: "About", href: "/about" },
-  { emoji: "📓", label: "Guestbook", href: "/guestbook" },
-  { emoji: "📸", label: "The Little Picture", href: "/thelittlepicture" },
+  { emoji: "📬", label: "About", href: "/about", desc: "A postcard from the archivist explaining the purpose of this collection" },
+  { emoji: "📓", label: "Guestbook", href: "/guestbook", desc: "Leave a note for the archive and see what other visitors have written" },
+  { emoji: "📸", label: "The Little Picture", href: "/thelittlepicture", desc: "A curated feed of small photographs and visual moments worth keeping" },
 ];
+
+
 
 interface NavCardsProps {
   minimized?: boolean;
@@ -25,7 +27,7 @@ export function NavCards({ minimized = false, horizontal = false }: NavCardsProp
     <div
       className={
         horizontal
-          ? "flex gap-3 overflow-x-auto pb-2 scrollbar-none"
+          ? "flex gap-3 overflow-x-auto pb-2 px-4 scrollbar-none"
           : "flex flex-col gap-3"
       }
     >
@@ -33,16 +35,21 @@ export function NavCards({ minimized = false, horizontal = false }: NavCardsProp
         <Link
           key={item.href}
           href={item.href}
-          className={`zissou-border zissou-shadow bg-cream hover:bg-submarine-yellow/20 transition-none block ${
-            horizontal ? "shrink-0" : ""
-          } ${minimized ? "px-2 py-2 text-center" : "px-3 py-2"}`}
+          className={`bg-[white] hover:bg-submarine-yellow/20 transition-none block ${
+            minimized ? "zissou-border text-center" : "zissou-border zissou-shadow px-3 py-2"
+          } ${horizontal ? "shrink-0 max-w-[235px]" : ""}`}
         >
           {minimized ? (
             <span className="text-lg">{item.emoji}</span>
           ) : (
-            <span className="zissou-mono text-sm text-inkstain">
-              {item.emoji} {item.label}
-            </span>
+            <>
+              <span className="zissou-heading text-xs font-bold text-inkstain block">
+                {item.emoji} {item.label}
+              </span>
+              <span className="zissou-mono text-[10px] text-inkstain/50 leading-tight block mt-1">
+                {item.desc}
+              </span>
+            </>
           )}
         </Link>
       ))}
