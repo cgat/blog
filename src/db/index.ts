@@ -1,8 +1,9 @@
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as schema from './schema';
 import { existsSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
+import { dirname, resolve } from 'path';
 
 const dbPath = './data/blog.db';
 
@@ -14,3 +15,6 @@ if (!existsSync(dir)) {
 
 const sqlite = new Database(dbPath);
 export const db = drizzle(sqlite, { schema });
+
+// Run migrations automatically on startup
+migrate(db, { migrationsFolder: resolve(process.cwd(), 'drizzle') });

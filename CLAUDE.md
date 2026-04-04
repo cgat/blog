@@ -133,17 +133,8 @@ All local `.env.local` vars plus:
 
 1. Push to `main` on GitHub
 2. Go to Coolify dashboard → app → click **Redeploy**
-3. After deploy, run migrations if schema changed (see below)
 
-### Running Migrations
-
-`drizzle-kit` is a dev dependency, so it's not in the production container. Use `npx` to run it:
-
-```bash
-ssh root@5.78.103.15
-docker exec -it $(docker ps --filter "name=ogsg408w" -q) sh
-npx drizzle-kit migrate
-```
+Migrations run automatically on app startup via `drizzle-orm`'s programmatic migrator in `src/db/index.ts`.
 
 ### Server Maintenance
 
