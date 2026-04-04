@@ -4,6 +4,7 @@ import { eq, desc, lt, gt, and, isNull, isNotNull } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import { extractBareUrls, getLinkPreviewsForUrls, processPostLinkPreviews } from '@/lib/link-previews';
 import { getLikeCount, getLikeCounts, getLikedPostIds, getImageLikeCounts, getLikedImageIds } from '@/lib/likes';
+import { getCommentCount, getCommentCounts } from '@/lib/comments';
 
 export interface CreatePostInput {
   content: string;
@@ -19,6 +20,7 @@ export interface PostWithRelations {
   isPrivate: boolean;
   likeCount: number;
   likedByMe: boolean;
+  commentCount: number;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -107,6 +109,7 @@ export async function getPost(id: string, options?: { includePrivate?: boolean; 
   const linkPreviewData = await getLinkPreviewsForUrls(urls);
 
   const likeCount = await getLikeCount(id);
+  const commentCount = await getCommentCount(id);
   let likedByMe = false;
   if (fingerprint) {
     const existingLike = await db.query.likes.findFirst({
@@ -127,6 +130,7 @@ export async function getPost(id: string, options?: { includePrivate?: boolean; 
     isPrivate: result.isPrivate,
     likeCount,
     likedByMe,
+    commentCount,
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
     publishedAt: result.publishedAt,
@@ -220,6 +224,9 @@ export async function getPosts(options: {
   const likeCounts = await getLikeCounts(postIds);
   const likedIds = fingerprint ? await getLikedPostIds(postIds, fingerprint) : new Set<string>();
 
+  // Batch-fetch comment counts
+  const commentCounts = await getCommentCounts(postIds);
+
   // Batch-fetch image like data
   const allImageIds = postsToReturn.flatMap((p) => p.images.map((img) => img.id));
   const imgLikeCounts = await getImageLikeCounts(allImageIds);
@@ -242,6 +249,7 @@ export async function getPosts(options: {
         isPrivate: result.isPrivate,
         likeCount: likeCounts[result.id] || 0,
         likedByMe: likedIds.has(result.id),
+        commentCount: commentCounts[result.id] || 0,
         createdAt: result.createdAt,
         updatedAt: result.updatedAt,
         publishedAt: result.publishedAt,

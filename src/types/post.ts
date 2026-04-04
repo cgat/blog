@@ -34,6 +34,7 @@ export interface Post {
   isPrivate: boolean;
   likeCount: number;
   likedByMe: boolean;
+  commentCount: number;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
