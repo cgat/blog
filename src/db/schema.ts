@@ -126,3 +126,11 @@ export const linkPreviews = sqliteTable('link_previews', {
   domain: text('domain').notNull(),
   scrapedAt: integer('scraped_at', { mode: 'timestamp' }).notNull(),
 });
+
+export const guestbookEntries = sqliteTable('guestbook_entries', {
+  id: text('id').primaryKey(),
+  name: text('name'),
+  content: text('content').notNull(),
+  fingerprint: text('fingerprint').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});
