@@ -13,13 +13,14 @@ import { Post, PostImage, PostTag } from "@/types/post";
 
 interface FeedPageProps {
   includePrivate?: boolean;
+  initialTags?: string[];
 }
 
-export function FeedPage({ includePrivate = false }: FeedPageProps) {
+export function FeedPage({ includePrivate = false, initialTags = [] }: FeedPageProps) {
   const { data: session } = useSession();
   const [posts, setPosts] = useState<Post[]>([]);
   const [tags, setTags] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialTags);
   const [hasNewer, setHasNewer] = useState(false);
   const [hasOlder, setHasOlder] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
