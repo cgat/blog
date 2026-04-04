@@ -17,6 +17,7 @@ interface PostCardProps {
   onDelete?: () => void;
   onPublish?: () => void;
   onLike?: () => void;
+  onComment?: () => void;
   onImageClick?: (image: PostImage) => void;
 }
 
@@ -116,6 +117,22 @@ const ThumbsDownIcon = () => (
   </svg>
 );
 
+const CommentIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+    />
+  </svg>
+);
+
 function ShameToast({ visible }: { visible: boolean }) {
   return (
     <div
@@ -139,6 +156,7 @@ export function PostCard({
   onDelete,
   onPublish,
   onLike,
+  onComment,
   onImageClick,
 }: PostCardProps) {
   const [showShame, setShowShame] = useState(false);
@@ -290,6 +308,17 @@ export function PostCard({
         >
           <ThumbsDownIcon />
         </button>
+        {onComment && (
+          <button
+            onClick={onComment}
+            className="flex items-center gap-1.5 text-inkstain/30 hover:text-inkstain/60 transition-transform duration-150 active:scale-110 ml-1"
+          >
+            <CommentIcon />
+            {post.commentCount > 0 && (
+              <span className="zissou-mono text-xs">{post.commentCount}</span>
+            )}
+          </button>
+        )}
       </div>
       <ShameToast visible={showShame} />
     </article>
