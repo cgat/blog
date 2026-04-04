@@ -29,7 +29,8 @@
       "Bash(pg_restore:*)",
       "Bash(brew services list)",
       "Bash(brew services:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(git -C /Users/cgat/code/personal/blog check-ignore -q .worktrees)"
     ],
     "deny": [
       "Bash(git push*)",
