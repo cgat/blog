@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getComments, createComment, RateLimitError } from '@/lib/comments';
 import { getPost } from '@/lib/posts';
 import { computeFingerprint } from '@/lib/likes';
+import { auth } from '@/auth';
 
 export async function GET(
   request: NextRequest,
@@ -13,7 +14,8 @@ export async function GET(
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const result = await getComments(id);
+  const session = await auth();
+  const result = await getComments(id, { includePrivate: !!session });
   return NextResponse.json(result);
 }
 
@@ -35,14 +37,14 @@ export async function POST(
   const fingerprint = computeFingerprint(ip, userAgent);
 
   const body = await request.json();
-  const { content, name } = body;
+  const { content, name, isPrivate } = body;
 
   if (!content?.trim()) {
     return NextResponse.json({ error: 'Content is required' }, { status: 400 });
   }
 
   try {
-    const comment = await createComment(id, content, fingerprint, name);
+    const comment = await createComment(id, content, fingerprint, name, isPrivate);
     return NextResponse.json(comment, { status: 201 });
   } catch (err) {
     if (err instanceof RateLimitError) {

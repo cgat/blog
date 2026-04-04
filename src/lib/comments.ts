@@ -8,23 +8,30 @@ export interface CommentData {
   postId: string;
   name: string | null;
   content: string;
+  isPrivate: boolean;
   createdAt: Date;
 }
 
 const RATE_LIMIT = 7;
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
-export async function getComments(postId: string): Promise<CommentData[]> {
+export async function getComments(postId: string, options?: { includePrivate?: boolean }): Promise<CommentData[]> {
+  const whereConditions = [eq(comments.postId, postId)];
+  if (!options?.includePrivate) {
+    whereConditions.push(eq(comments.isPrivate, false));
+  }
+
   const results = await db
     .select({
       id: comments.id,
       postId: comments.postId,
       name: comments.name,
       content: comments.content,
+      isPrivate: comments.isPrivate,
       createdAt: comments.createdAt,
     })
     .from(comments)
-    .where(eq(comments.postId, postId))
+    .where(and(...whereConditions))
     .orderBy(comments.createdAt);
 
   return results;
@@ -34,7 +41,8 @@ export async function createComment(
   postId: string,
   content: string,
   fingerprint: string,
-  name?: string
+  name?: string,
+  isPrivate?: boolean
 ): Promise<CommentData> {
   // Rate limit check — 7 comments per hour per fingerprint (across all posts)
   const windowStart = new Date(Date.now() - RATE_WINDOW_MS);
@@ -57,41 +65,55 @@ export async function createComment(
   const trimmedName = name?.trim().slice(0, 50) || null;
   const trimmedContent = content.trim().slice(0, 2000);
 
+  const privateFlag = isPrivate ?? false;
+
   await db.insert(comments).values({
     id,
     postId,
     name: trimmedName,
     content: trimmedContent,
     fingerprint,
+    isPrivate: privateFlag,
     createdAt: now,
   });
 
-  return { id, postId, name: trimmedName, content: trimmedContent, createdAt: now };
+  return { id, postId, name: trimmedName, content: trimmedContent, isPrivate: privateFlag, createdAt: now };
 }
 
 export async function deleteComment(commentId: string): Promise<void> {
   await db.delete(comments).where(eq(comments.id, commentId));
 }
 
-export async function getCommentCount(postId: string): Promise<number> {
+export async function getCommentCount(postId: string, options?: { includePrivate?: boolean }): Promise<number> {
+  const whereConditions = [eq(comments.postId, postId)];
+  if (!options?.includePrivate) {
+    whereConditions.push(eq(comments.isPrivate, false));
+  }
   const result = await db
     .select({ count: sql<number>`count(*)` })
     .from(comments)
-    .where(eq(comments.postId, postId));
+    .where(and(...whereConditions));
   return result[0].count;
 }
 
 export async function getCommentCounts(
-  postIds: string[]
+  postIds: string[],
+  options?: { includePrivate?: boolean }
 ): Promise<Record<string, number>> {
   if (postIds.length === 0) return {};
+  const whereConditions = [
+    sql`${comments.postId} IN (${sql.join(postIds.map(id => sql`${id}`), sql`, `)})`
+  ];
+  if (!options?.includePrivate) {
+    whereConditions.push(sql`${comments.isPrivate} = 0`);
+  }
   const results = await db
     .select({
       postId: comments.postId,
       count: sql<number>`count(*)`,
     })
     .from(comments)
-    .where(sql`${comments.postId} IN (${sql.join(postIds.map(id => sql`${id}`), sql`, `)})`)
+    .where(sql.join(whereConditions, sql` AND `))
     .groupBy(comments.postId);
 
   const counts: Record<string, number> = {};

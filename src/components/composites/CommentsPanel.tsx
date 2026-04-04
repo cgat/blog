@@ -16,6 +16,7 @@ interface Comment {
   postId: string;
   name: string | null;
   content: string;
+  isPrivate: boolean;
   createdAt: string;
 }
 
@@ -77,6 +78,7 @@ function CommentsPanelCard({
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [content, setContent] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,7 +109,7 @@ function CommentsPanelCard({
       const res = await fetch(`/api/posts/${postId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content.trim(), name: name.trim() || undefined }),
+        body: JSON.stringify({ content: content.trim(), name: name.trim() || undefined, isPrivate }),
       });
 
       if (res.status === 429) {
@@ -188,6 +190,11 @@ function CommentsPanelCard({
                   <span className="zissou-mono text-xs text-inkstain/40 ml-2">
                     {timeAgo(new Date(comment.createdAt))}
                   </span>
+                  {comment.isPrivate && (
+                    <span className="zissou-mono text-xs text-amber-flame ml-2">
+                      private
+                    </span>
+                  )}
                 </div>
                 {isOwner && (
                   <button
@@ -223,6 +230,15 @@ function CommentsPanelCard({
           rows={3}
           className="w-full border-2 border-inkstain/20 focus:border-deep-ocean-teal rounded px-3 py-2 text-sm outline-none resize-none"
         />
+        <label className="flex items-center gap-2 text-sm text-inkstain/60">
+          <input
+            type="checkbox"
+            checked={isPrivate}
+            onChange={(e) => setIsPrivate(e.target.checked)}
+            className="accent-deep-ocean-teal"
+          />
+          <span className="zissou-mono text-xs">Private (only visible to you)</span>
+        </label>
         {error && (
           <p className="text-xs text-tracksuit-red zissou-mono">{error}</p>
         )}
