@@ -1,28 +1,16 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
-import { Avatar } from "../primitives/Avatar";
-import { Button } from "../primitives/Button";
 import { useState, useRef, useEffect } from "react";
+import { NavCards } from "../composites/NavCards";
 
-interface HeaderProps {
-  blogName?: string;
-}
-
-export function Header({
-  blogName = "The Archive of Small Things",
-}: HeaderProps) {
-  const { data: session, status } = useSession();
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+export function Header() {
+  const [showNav, setShowNav] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setShowDropdown(false);
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setShowNav(false);
       }
     };
 
@@ -31,9 +19,9 @@ export function Header({
   }, []);
 
   return (
-    <header className="border-b-2 border-inkstain bg-[white] sticky top-0 z-40">
+    <header className="border-b-2 border-inkstain bg-[white] sticky top-0 z-40" ref={navRef}>
       <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex flex-row">
+        <a href="/" className="flex flex-row">
           <img
             src="/filing_cabinet2.svg"
             alt=""
@@ -41,63 +29,42 @@ export function Header({
             height="56px"
             className="mr-1 w-[2.6rem]"
           />
-          <h2 className="zissou-heading text-[1.37rem] text-tracksuit-red font-black text-shadow-[2px_2px_0px_var(--submarine-yellow)]  tracking-[0.2px]! leading-[1.1]! flex flex-col">
-            <span className="">The Archive</span>
+          <h2 className="zissou-heading text-[1.37rem] text-tracksuit-red font-black text-shadow-[2px_2px_0px_var(--submarine-yellow)] tracking-[0.2px]! leading-[1.1]! flex flex-col">
+            <span>The Archive</span>
             <span className="inline-block text-[1rem]">of Small Things</span>
           </h2>
-        </div>
+        </a>
 
-        {status === "loading" ? (
-          <div className="w-10 h-10 bg-cream zissou-border rounded-full" />
-        ) : session ? (
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center gap-2"
-            >
-              <Avatar
-                src={session.user?.image}
-                fallback={session.user?.name || ""}
-                size="sm"
-              />
-              <svg
-                className="w-4 h-4 text-inkstain"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-
-            {showDropdown && (
-              <div className="absolute right-0 top-full mt-2 bg-cream zissou-border zissou-shadow py-2 min-w-[150px]">
-                <a
-                  href="/private"
-                  className="block px-4 py-2 zissou-mono text-sm text-inkstain hover:bg-submarine-yellow/30 transition-none"
-                >
-                  Private feed
-                </a>
-                <button
-                  onClick={() => signOut()}
-                  className="w-full px-4 py-2 text-left zissou-mono text-sm text-inkstain hover:bg-submarine-yellow/30 transition-none"
-                >
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <Button variant="ghost" size="sm" onClick={() => signIn("google")}>
-            Sign in
-          </Button>
-        )}
+        {/* Folder tab toggle */}
+        <button
+          onClick={() => setShowNav(!showNav)}
+          className="p-2 hover:bg-submarine-yellow/20 transition-none"
+          aria-label="Navigation"
+        >
+          {/* File folder tab icon — Wes Anderson index card style */}
+          <svg width="28" height="24" viewBox="0 0 28 24" fill="none" className="text-inkstain">
+            <path
+              d="M2 6h24v16H2V6z"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="var(--cream)"
+            />
+            <path
+              d="M2 6l3-4h8l3 4"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="var(--submarine-yellow)"
+            />
+          </svg>
+        </button>
       </div>
+
+      {/* Expandable nav tray */}
+      {showNav && (
+        <div className="border-t-2 border-inkstain px-4 py-3">
+          <NavCards horizontal />
+        </div>
+      )}
     </header>
   );
 }
