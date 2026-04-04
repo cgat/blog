@@ -42,6 +42,7 @@ export const postsRelations = relations(posts, ({ many }) => ({
   images: many(images),
   postTags: many(postTags),
   likes: many(likes),
+  comments: many(comments),
 }));
 
 export const imagesRelations = relations(images, ({ one, many }) => ({
@@ -96,6 +97,22 @@ export const imageLikesRelations = relations(imageLikes, ({ one }) => ({
   image: one(images, {
     fields: [imageLikes.imageId],
     references: [images.id],
+  }),
+}));
+
+export const comments = sqliteTable('comments', {
+  id: text('id').primaryKey(),
+  postId: text('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  name: text('name'),
+  content: text('content').notNull(),
+  fingerprint: text('fingerprint').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  post: one(posts, {
+    fields: [comments.postId],
+    references: [posts.id],
   }),
 }));
 
