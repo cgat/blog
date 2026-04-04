@@ -8,6 +8,7 @@ import { FeedLayout } from "../composites/FeedLayout";
 import { ConfirmDialog } from "../composites/ConfirmDialog";
 
 import { ImageViewer } from "../composites/ImageViewer";
+import { CommentsPanel } from "../composites/CommentsPanel";
 import { Post, PostImage, PostTag } from "@/types/post";
 
 interface FeedPageProps {
@@ -28,6 +29,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [viewerImage, setViewerImage] = useState<PostImage | null>(null);
   const [viewerPostId, setViewerPostId] = useState<string | null>(null);
+  const [commentPostId, setCommentPostId] = useState<string | null>(null);
 
   const fetchPosts = useCallback(
     async (cursor?: Date, direction: "older" | "newer" = "older") => {
@@ -328,6 +330,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
   const handleImageClick = (image: PostImage, post: Post) => {
     setViewerImage(image);
     setViewerPostId(post.id);
+    setCommentPostId(null); // close comments if open
   };
 
   const handleViewerPrev =
@@ -381,8 +384,37 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
     }
   };
 
+  const handleComment = (postId: string) => {
+    setCommentPostId(postId);
+    // Close image viewer if open
+    setViewerImage(null);
+    setViewerPostId(null);
+  };
+
+  const handleCommentClose = () => {
+    setCommentPostId(null);
+  };
+
+  const handleCommentCountChange = (postId: string, delta: number) => {
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId ? { ...p, commentCount: p.commentCount + delta } : p
+      )
+    );
+  };
+
   // Build panel content for AppLayout
-  const panel = viewerImage ? (
+  const commentPost = commentPostId ? posts.find((p) => p.id === commentPostId) : null;
+
+  const panel = commentPost ? (
+    <CommentsPanel
+      postId={commentPost.id}
+      postPreview={commentPost.content.slice(0, 60)}
+      isOwner={!!session}
+      onClose={handleCommentClose}
+      onCommentCountChange={handleCommentCountChange}
+    />
+  ) : viewerImage ? (
     <ImageViewer
       image={viewerImage}
       onClose={handleViewerClose}
@@ -462,6 +494,7 @@ export function FeedPage({ includePrivate = false }: FeedPageProps) {
           onPostPublish={(id) => handlePublishDraft(id)}
           onPostLike={handleLike}
           onImageClick={handleImageClick}
+          onPostComment={handleComment}
         />
       )}
 

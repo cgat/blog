@@ -19,6 +19,7 @@ interface FeedLayoutProps {
   onPostPublish?: (postId: string) => void;
   onPostLike?: (postId: string) => void;
   onImageClick?: (image: PostImage, post: Post) => void;
+  onPostComment?: (postId: string) => void;
 }
 
 export function FeedLayout({
@@ -35,6 +36,7 @@ export function FeedLayout({
   onPostPublish,
   onPostLike,
   onImageClick,
+  onPostComment,
 }: FeedLayoutProps) {
   if (posts.length === 0) {
     return (
@@ -69,6 +71,7 @@ export function FeedLayout({
           onPublish={() => onPostPublish?.(post.id)}
           onLike={() => onPostLike?.(post.id)}
           onImageClick={(image) => onImageClick?.(image, post)}
+          onComment={() => onPostComment?.(post.id)}
         />
       ))}
 
