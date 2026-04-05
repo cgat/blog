@@ -10,9 +10,13 @@ export default function AboutPage() {
       <div className="max-w-2xl mx-auto">
         {/* Postcard */}
         <div className="zissou-border zissou-shadow bg-[white] relative">
-          {/* Stamp decoration */}
-          <div className="absolute top-4 right-4 w-16 h-20 zissou-border bg-mendls-pink/30 flex items-center justify-center rotate-3">
-            <span className="text-2xl">📬</span>
+          {/* Portrait */}
+          <div className="absolute top-4 right-4 w-24 h-28 zissou-border overflow-hidden rotate-3 shadow-md">
+            <img
+              src="/archivist.png"
+              alt="The Archivist"
+              className="w-full h-full object-cover"
+            />
           </div>
 
           <div className="p-8 pr-24">
@@ -30,15 +34,35 @@ export default function AboutPage() {
                 seemed worth preserving.
               </p>
               <p>
-                This is a quiet corner of the internet where things are filed away
+                Some of what you find here is new. Much of it has been rescued
+                from the scattered corners of the internet where it once lived —
+                Flickr albums, old blogs, Blogger posts, Facebook notes, Google
+                pages — gathered together into one place before the platforms
+                forgot them entirely. This means some entries may seem a little
+                out of context. That is the nature of an archive.
+              </p>
+              <p>
+                This is a small contribution to the{" "}
+                <a
+                  href="https://benhoyt.com/writings/the-small-web-is-beautiful/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-deep-ocean-teal underline decoration-2 hover:text-tracksuit-red"
+                >
+                  Small Web
+                </a>
+                {" "}— a quiet corner of the internet where things are filed away
                 not because they are important, but because they happened. A meal
                 that was particularly good. A walk that went somewhere unexpected.
                 A sentence overheard on the bus that refused to be forgotten.
               </p>
               <p>
-                The archive operates on the principle that small things, properly
-                catalogued, become their own kind of treasure. Nothing here is
-                urgent. Everything here is, in its own way, true.
+                Long-time visitors may recognise the name. The Archive of Small
+                Things is a hat tip to its predecessor, a travel photo blog
+                called The Little Picture. That branding lives on here for the
+                photography, but the archive itself hopes to be something broader —
+                not just travel and photographs, but all the small things worth
+                keeping.
               </p>
               <p>
                 Thank you for visiting the collection. You are welcome to browse
