@@ -86,85 +86,67 @@ export default function GuestbookPage() {
           A record of visitors to the archive. All are welcome.
         </p>
 
-        {/* Entry form — notebook style */}
-        <form onSubmit={handleSubmit} className="mb-10">
-          <div className="zissou-border bg-[white] p-6 relative" style={{
-            backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, var(--deep-ocean-teal) 27px, var(--deep-ocean-teal) 28px)",
-            backgroundPosition: "0 40px",
-          }}>
-            {/* Red margin line */}
-            <div className="absolute left-10 top-0 bottom-0 w-[2px] bg-tracksuit-red/30" />
-
-            <p className="zissou-mono text-sm text-inkstain/60 italic mb-4 pl-6">
-              {prompt}
-            </p>
-
-            <div className="pl-6">
-              <input
-                type="text"
-                placeholder="Your name (or leave blank for Anonymous)"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={50}
-                className="w-full bg-transparent zissou-mono text-sm text-inkstain placeholder:text-inkstain/30 outline-none mb-4 pb-1"
-              />
-              <textarea
-                placeholder="Write something..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                maxLength={2000}
-                rows={3}
-                className="w-full bg-transparent zissou-mono text-sm text-inkstain placeholder:text-inkstain/30 outline-none resize-none leading-[28px]"
-              />
-            </div>
-
-            {error && (
-              <p className="zissou-mono text-xs text-tracksuit-red mt-2 pl-6">{error}</p>
-            )}
-
-            <div className="flex justify-end mt-4">
-              <button
-                type="submit"
-                disabled={isSubmitting || !content.trim()}
-                className="zissou-mono text-xs uppercase px-4 py-2 bg-inkstain text-cream zissou-border hover:bg-tracksuit-red disabled:opacity-50 transition-none"
-              >
-                {isSubmitting ? "Filing..." : "Sign the book"}
-              </button>
-            </div>
+        {/* Entry form */}
+        <div className="bg-white zissou-border zissou-shadow mb-10">
+          <div className="px-4 py-2 border-b-2 border-inkstain">
+            <h3 className="text-sm font-bold text-inkstain">{prompt}</h3>
           </div>
-        </form>
+
+          <form onSubmit={handleSubmit} className="px-4 py-3 space-y-2">
+            <input
+              type="text"
+              placeholder="Name (optional)"
+              maxLength={50}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full border-2 border-inkstain/20 focus:border-deep-ocean-teal rounded px-3 py-2 text-sm outline-none"
+            />
+            <textarea
+              placeholder="Write something..."
+              maxLength={2000}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={3}
+              className="w-full border-2 border-inkstain/20 focus:border-deep-ocean-teal rounded px-3 py-2 text-sm outline-none resize-none"
+            />
+            {error && (
+              <p className="text-xs text-tracksuit-red zissou-mono">{error}</p>
+            )}
+            <button
+              type="submit"
+              disabled={!content.trim() || isSubmitting}
+              className="bg-deep-ocean-teal text-white px-4 py-2 rounded text-sm font-medium hover:bg-deep-ocean-teal/90 disabled:opacity-50"
+            >
+              {isSubmitting ? "Filing..." : "Sign the book"}
+            </button>
+          </form>
+        </div>
 
         {/* Entries */}
         <div className="space-y-4">
           {entries.map((entry) => (
-            <div
-              key={entry.id}
-              className="zissou-border bg-[white] p-5 relative"
-              style={{
-                backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, var(--deep-ocean-teal) 27px, var(--deep-ocean-teal) 28px)",
-                backgroundPosition: "0 12px",
-              }}
-            >
-              <div className="absolute left-10 top-0 bottom-0 w-[2px] bg-tracksuit-red/30" />
-              <div className="pl-6">
-                <p className="zissou-mono text-sm text-inkstain leading-[28px] whitespace-pre-wrap">
-                  {entry.content}
-                </p>
-                <div className="flex items-center justify-between mt-3 pt-2">
-                  <span className="zissou-mono text-xs text-inkstain/60 font-bold">
-                    — {entry.name || "Anonymous"}
+            <div key={entry.id} className="group">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="text-sm font-bold text-inkstain">
+                    {entry.name || (
+                      <span className="font-normal italic text-inkstain/60">
+                        Anonymous
+                      </span>
+                    )}
                   </span>
-                  <span className="zissou-mono text-xs text-inkstain/40">
+                  <span className="zissou-mono text-xs text-inkstain/40 ml-2">
                     {timeAgo(new Date(entry.createdAt))}
                   </span>
                 </div>
               </div>
+              <p className="text-sm text-inkstain mt-0.5">{entry.content}</p>
             </div>
           ))}
 
           {entries.length === 0 && (
-            <p className="zissou-mono text-sm text-inkstain/40 text-center py-8 italic">
-              The guestbook is empty. Be the first to sign it.
+            <p className="text-sm text-inkstain/40 zissou-mono text-center py-6">
+              No entries yet. Be the first to sign.
             </p>
           )}
         </div>
