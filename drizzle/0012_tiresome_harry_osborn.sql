@@ -1,0 +1,1 @@
+ALTER TABLE `guestbook_entries` ADD `is_private` integer DEFAULT false NOT NULL;

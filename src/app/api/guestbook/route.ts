@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGuestbookEntries, createGuestbookEntry, RateLimitError } from '@/lib/guestbook';
 import { computeFingerprint } from '@/lib/likes';
+import { auth } from '@/auth';
 
 export async function GET() {
-  const entries = await getGuestbookEntries();
+  const session = await auth();
+  const entries = await getGuestbookEntries({ includePrivate: !!session });
   return NextResponse.json(entries);
 }
 
@@ -16,14 +18,14 @@ export async function POST(request: NextRequest) {
   const fingerprint = computeFingerprint(ip, userAgent);
 
   const body = await request.json();
-  const { content, name } = body;
+  const { content, name, isPrivate } = body;
 
   if (!content?.trim()) {
     return NextResponse.json({ error: 'Content is required' }, { status: 400 });
   }
 
   try {
-    const entry = await createGuestbookEntry(content, fingerprint, name);
+    const entry = await createGuestbookEntry(content, fingerprint, name, isPrivate);
     return NextResponse.json(entry, { status: 201 });
   } catch (err) {
     if (err instanceof RateLimitError) {

@@ -95,6 +95,8 @@ function CommentsPanelCard({
   }, [postId]);
 
   useEffect(() => {
+    const savedName = localStorage.getItem("archive-visitor-name");
+    if (savedName) setName(savedName);
     fetchComments();
   }, [fetchComments]);
 
@@ -125,6 +127,9 @@ function CommentsPanelCard({
       const comment = await res.json();
       setComments((prev) => [...prev, comment]);
       setContent("");
+      if (name.trim()) {
+        localStorage.setItem("archive-visitor-name", name.trim());
+      }
       onCommentCountChange(postId, 1);
     } catch {
       setError("Failed to post comment.");
@@ -216,7 +221,7 @@ function CommentsPanelCard({
       <form onSubmit={handleSubmit} className="border-t-2 border-inkstain px-4 py-3 space-y-2">
         <input
           type="text"
-          placeholder="Name (optional)"
+          placeholder="(Optional) Name, handle, email, or an obscure personal reference"
           maxLength={50}
           value={name}
           onChange={(e) => setName(e.target.value)}

@@ -132,5 +132,6 @@ export const guestbookEntries = sqliteTable('guestbook_entries', {
   name: text('name'),
   content: text('content').notNull(),
   fingerprint: text('fingerprint').notNull(),
+  isPrivate: integer('is_private', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });

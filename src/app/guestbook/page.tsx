@@ -7,6 +7,7 @@ interface GuestbookEntry {
   id: string;
   name: string | null;
   content: string;
+  isPrivate: boolean;
   createdAt: string;
 }
 
@@ -34,11 +35,14 @@ export default function GuestbookPage() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([]);
   const [name, setName] = useState("");
   const [content, setContent] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prompt] = useState(() => PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
 
   useEffect(() => {
+    const savedName = localStorage.getItem("archive-visitor-name");
+    if (savedName) setName(savedName);
     fetch("/api/guestbook")
       .then((res) => res.json())
       .then(setEntries);
@@ -55,7 +59,7 @@ export default function GuestbookPage() {
       const res = await fetch("/api/guestbook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content.trim(), name: name.trim() || undefined }),
+        body: JSON.stringify({ content: content.trim(), name: name.trim() || undefined, isPrivate }),
       });
 
       if (res.status === 429) {
@@ -71,6 +75,9 @@ export default function GuestbookPage() {
       const entry = await res.json();
       setEntries((prev) => [entry, ...prev]);
       setContent("");
+      if (name.trim()) {
+        localStorage.setItem("archive-visitor-name", name.trim());
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -95,7 +102,7 @@ export default function GuestbookPage() {
           <form onSubmit={handleSubmit} className="px-4 py-3 space-y-2">
             <input
               type="text"
-              placeholder="Name (optional)"
+              placeholder="(Optional) Name, handle, email, or an obscure personal reference"
               maxLength={50}
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -109,6 +116,15 @@ export default function GuestbookPage() {
               rows={3}
               className="w-full border-2 border-inkstain/20 focus:border-deep-ocean-teal rounded px-3 py-2 text-sm outline-none resize-none"
             />
+            <label className="flex items-center gap-2 text-sm text-inkstain/60">
+              <input
+                type="checkbox"
+                checked={isPrivate}
+                onChange={(e) => setIsPrivate(e.target.checked)}
+                className="accent-deep-ocean-teal"
+              />
+              <span className="zissou-mono text-xs">Private (only visible to the archivist)</span>
+            </label>
             {error && (
               <p className="text-xs text-tracksuit-red zissou-mono">{error}</p>
             )}
@@ -138,6 +154,11 @@ export default function GuestbookPage() {
                   <span className="zissou-mono text-xs text-inkstain/40 ml-2">
                     {timeAgo(new Date(entry.createdAt))}
                   </span>
+                  {entry.isPrivate && (
+                    <span className="zissou-mono text-xs text-deep-ocean-teal ml-2">
+                      private
+                    </span>
+                  )}
                 </div>
               </div>
               <p className="text-sm text-inkstain mt-0.5">{entry.content}</p>
