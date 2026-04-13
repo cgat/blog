@@ -365,6 +365,37 @@ export function FeedPage({ includePrivate = false, initialTags = [] }: FeedPageP
     );
   };
 
+  const handleFeaturedToggle = async (imageId: string) => {
+    if (!viewerPostId) return;
+
+    try {
+      const res = await fetch(`/api/image-featured/${imageId}`, { method: "PATCH" });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      // Update all images in the post: unfeatured others, toggle this one
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === data.postId
+            ? {
+                ...p,
+                images: p.images.map((img) =>
+                  img.id === imageId
+                    ? { ...img, featured: data.featured }
+                    : { ...img, featured: false }
+                ),
+              }
+            : p
+        )
+      );
+      setViewerImage((prev) =>
+        prev ? { ...prev, featured: prev.id === imageId ? data.featured : false } : prev
+      );
+    } catch {
+      // silently fail
+    }
+  };
+
   const handleImageLike = async () => {
     if (!viewerImage || !viewerPostId) return;
     const imageId = viewerImage.id;
@@ -440,6 +471,7 @@ export function FeedPage({ includePrivate = false, initialTags = [] }: FeedPageP
       onNext={handleViewerNext}
       onLike={handleImageLike}
       onCaptionSave={handleCaptionSave}
+      onFeaturedToggle={handleFeaturedToggle}
     />
   ) : null;
 

@@ -260,6 +260,7 @@ export async function getPosts(options: {
           width: img.width,
           height: img.height,
           caption: img.caption ?? undefined,
+          featured: img.featured || undefined,
           mimeType: img.mimeType ?? undefined,
           likeCount: imgLikeCounts[img.id] || 0,
           likedByMe: imgLikedIds.has(img.id),
