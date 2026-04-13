@@ -60,3 +60,28 @@ export const ExpandedView: Story = {
     expanded: true,
   },
 };
+
+const mockVideo = {
+  id: 'v1',
+  url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+  width: 800,
+  height: 450,
+  mimeType: 'video/mp4',
+};
+
+export const SingleVideo: Story = {
+  args: {
+    images: [mockVideo],
+  },
+};
+
+export const MixedMediaGrid: Story = {
+  args: {
+    images: [
+      mockImages[0],
+      mockVideo,
+      mockImages[1],
+      mockImages[2],
+    ],
+  },
+};

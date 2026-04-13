@@ -6,6 +6,7 @@ export interface PostImage {
   featured?: boolean;
   width: number;
   height: number;
+  mimeType?: string;
   likeCount: number;
   likedByMe: boolean;
 }

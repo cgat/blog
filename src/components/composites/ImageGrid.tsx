@@ -8,6 +8,32 @@ interface ImageItem {
   width: number;
   height: number;
   featured?: boolean;
+  mimeType?: string;
+}
+
+function isVideo(item: ImageItem) {
+  return item.mimeType?.startsWith('video/');
+}
+
+function MediaThumb({ item, alt, fill, className }: { item: ImageItem; alt: string; fill?: boolean; className?: string }) {
+  if (isVideo(item)) {
+    return (
+      <video
+        src={item.url}
+        muted
+        loop
+        playsInline
+        autoPlay
+        className={className}
+        style={fill ? { position: 'absolute', inset: 0, width: '100%', height: '100%' } : undefined}
+      />
+    );
+  }
+  return fill ? (
+    <Image src={item.url} alt={alt} fill className={className} />
+  ) : (
+    <Image src={item.url} alt={alt} width={item.width} height={item.height} className={className} />
+  );
 }
 
 function CaptionIndicator() {
@@ -39,13 +65,7 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
         className="relative overflow-hidden zissou-border cursor-pointer"
         onClick={() => onImageClick?.(img)}
       >
-        <Image
-          src={img.url}
-          alt={img.alt || 'Post image'}
-          width={img.width}
-          height={img.height}
-          className="w-full h-auto"
-        />
+        <MediaThumb item={img} alt={img.alt || 'Post image'} className="w-full h-auto" />
         {img.caption && <CaptionIndicator />}
       </div>
     );
@@ -79,13 +99,7 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
           className="relative h-full shrink-0 zissou-border overflow-hidden cursor-pointer"
           onClick={() => onImageClick?.(featured)}
         >
-          <Image
-            src={featured.url}
-            alt={featured.alt || 'Featured image'}
-            width={featured.width}
-            height={featured.height}
-            className="h-full w-auto"
-          />
+          <MediaThumb item={featured} alt={featured.alt || 'Featured image'} className="h-full w-auto" />
           {featured.caption && <CaptionIndicator />}
         </div>
 
@@ -104,12 +118,7 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
               className="relative zissou-border overflow-hidden cursor-pointer"
               onClick={() => onImageClick?.(img)}
             >
-              <Image
-                src={img.url}
-                alt={img.alt || `Image ${index + 2}`}
-                fill
-                className="object-cover"
-              />
+              <MediaThumb item={img} alt={img.alt || `Image ${index + 2}`} fill className="object-cover" />
               {img.caption && <CaptionIndicator />}
               {!expanded && index === displayRest.length - 1 && remainingCount > 0 && (
                 <div className="absolute inset-0 bg-inkstain/60 flex items-center justify-center">
@@ -139,13 +148,7 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
         className="relative zissou-border overflow-hidden cursor-pointer"
         onClick={() => onImageClick?.(featured)}
       >
-        <Image
-          src={featured.url}
-          alt={featured.alt || 'Featured image'}
-          width={featured.width}
-          height={featured.height}
-          className="w-full h-auto"
-        />
+        <MediaThumb item={featured} alt={featured.alt || 'Featured image'} className="w-full h-auto" />
         {featured.caption && <CaptionIndicator />}
       </div>
 
@@ -163,12 +166,7 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
               className="relative zissou-border aspect-square overflow-hidden cursor-pointer"
               onClick={() => onImageClick?.(img)}
             >
-              <Image
-                src={img.url}
-                alt={img.alt || `Image ${index + 2}`}
-                fill
-                className="object-cover"
-              />
+              <MediaThumb item={img} alt={img.alt || `Image ${index + 2}`} fill className="object-cover" />
               {img.caption && <CaptionIndicator />}
               {!expanded && index === displayRest.length - 1 && remainingCount > 0 && (
                 <div className="absolute inset-0 bg-inkstain/60 flex items-center justify-center">

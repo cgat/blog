@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 });
   }
 
-  if (!file.type.startsWith('image/')) {
-    return NextResponse.json({ error: 'File must be an image' }, { status: 400 });
+  if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+    return NextResponse.json({ error: 'File must be an image or video' }, { status: 400 });
   }
 
   const imageMeta = await uploadImage(file);

@@ -20,6 +20,9 @@ export async function GET(
     png: 'image/png',
     gif: 'image/gif',
     webp: 'image/webp',
+    mp4: 'video/mp4',
+    webm: 'video/webm',
+    mov: 'video/quicktime',
   };
 
   return new NextResponse(new Uint8Array(file), {

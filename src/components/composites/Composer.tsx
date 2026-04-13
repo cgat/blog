@@ -27,7 +27,7 @@ interface ComposerProps {
     content: string;
     tags: string[];
     isPrivate: boolean;
-    images: { id: string; url: string }[];
+    images: { id: string; url: string; mimeType?: string }[];
     isDraft: boolean;
     publishedAt?: Date | null;
   };
@@ -297,7 +297,11 @@ export function Composer({
         <div className="flex gap-2 flex-wrap mb-4 ml-14">
           {existingImages.map((img) => (
             <div key={img.id} className="relative w-20 h-20">
-              <img src={img.url} alt="" className="w-full h-full object-cover zissou-border" />
+              {img.mimeType?.startsWith('video/') ? (
+                <video src={img.url} className="w-full h-full object-cover zissou-border" muted />
+              ) : (
+                <img src={img.url} alt="" className="w-full h-full object-cover zissou-border" />
+              )}
               <button
                 onClick={() => removeExistingImage(img.id)}
                 className="absolute -top-2 -right-2 w-5 h-5 bg-tracksuit-red text-white text-xs flex items-center justify-center zissou-border"
@@ -308,11 +312,15 @@ export function Composer({
           ))}
           {imagePreviews.map((preview, index) => (
             <div key={index} className="relative w-20 h-20">
-              <img
-                src={preview}
-                alt={`Upload ${index + 1}`}
-                className="w-full h-full object-cover zissou-border"
-              />
+              {images[index]?.type.startsWith('video/') ? (
+                <video src={preview} className="w-full h-full object-cover zissou-border" muted />
+              ) : (
+                <img
+                  src={preview}
+                  alt={`Upload ${index + 1}`}
+                  className="w-full h-full object-cover zissou-border"
+                />
+              )}
               <button
                 onClick={() => removeImage(index)}
                 className="absolute -top-2 -right-2 w-5 h-5 bg-tracksuit-red text-white text-xs flex items-center justify-center zissou-border"
@@ -488,7 +496,7 @@ export function Composer({
             className="flex items-center gap-2 text-inkstain/60 hover:text-deep-ocean-teal transition-none"
           >
             <PhotoIcon />
-            <span className="zissou-mono text-xs uppercase">Photo</span>
+            <span className="zissou-mono text-xs uppercase">Media</span>
           </button>
           {contentSources.map((source) => {
             const Icon = sourceIcons[source.id] || FilmIcon;
@@ -513,7 +521,7 @@ export function Composer({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           multiple
           onChange={handleImageSelect}
           className="hidden"

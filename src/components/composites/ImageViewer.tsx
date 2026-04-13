@@ -212,15 +212,27 @@ function ViewerCard({ image, isOwner, onClose, onPrev, onNext, onLike, onCaption
         </div>
       </div>
 
-      {/* Image */}
+      {/* Image / Video */}
       <div className="bg-inkstain/5">
-        <Image
-          src={image.url}
-          alt={image.alt || image.caption || "Image"}
-          width={image.width}
-          height={image.height}
-          className="w-full h-auto"
-        />
+        {image.mimeType?.startsWith('video/') ? (
+          <video
+            src={image.url}
+            controls
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-auto"
+          />
+        ) : (
+          <Image
+            src={image.url}
+            alt={image.alt || image.caption || "Image"}
+            width={image.width}
+            height={image.height}
+            className="w-full h-auto"
+          />
+        )}
       </div>
 
       {/* Caption */}

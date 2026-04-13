@@ -497,7 +497,7 @@ export function FeedPage({ includePrivate = false, initialTags = [] }: FeedPageP
                 content: post.content,
                 tags: post.tags.map((t) => t.name),
                 isPrivate: post.isPrivate,
-                images: post.images.map((img) => ({ id: img.id, url: img.url })),
+                images: post.images.map((img) => ({ id: img.id, url: img.url, mimeType: img.mimeType })),
                 isDraft: !post.publishedAt,
                 publishedAt: post.publishedAt,
               }}
