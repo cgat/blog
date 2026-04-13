@@ -349,6 +349,22 @@ export function FeedPage({ includePrivate = false, initialTags = [] }: FeedPageP
     setViewerPostId(null);
   };
 
+  const handleCaptionSave = (imageId: string, caption: string | null) => {
+    // Update the image caption in local state
+    setPosts((prev) =>
+      prev.map((p) => ({
+        ...p,
+        images: p.images.map((img) =>
+          img.id === imageId ? { ...img, caption: caption ?? undefined } : img
+        ),
+      }))
+    );
+    // Also update the viewer image if it's the one being viewed
+    setViewerImage((prev) =>
+      prev && prev.id === imageId ? { ...prev, caption: caption ?? undefined } : prev
+    );
+  };
+
   const handleImageLike = async () => {
     if (!viewerImage || !viewerPostId) return;
     const imageId = viewerImage.id;
@@ -418,10 +434,12 @@ export function FeedPage({ includePrivate = false, initialTags = [] }: FeedPageP
   ) : viewerImage ? (
     <ImageViewer
       image={viewerImage}
+      isOwner={!!session}
       onClose={handleViewerClose}
       onPrev={handleViewerPrev}
       onNext={handleViewerNext}
       onLike={handleImageLike}
+      onCaptionSave={handleCaptionSave}
     />
   ) : null;
 

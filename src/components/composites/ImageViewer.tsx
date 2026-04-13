@@ -2,15 +2,17 @@
 
 import Image from "next/image";
 import { PostImage } from "@/types/post";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePanelMode } from "../layout/AppLayout";
 
 interface ImageViewerProps {
   image: PostImage;
+  isOwner?: boolean;
   onClose: () => void;
   onPrev?: () => void;
   onNext?: () => void;
   onLike?: () => void;
+  onCaptionSave?: (imageId: string, caption: string | null) => void;
 }
 
 const ThumbsUpIcon = ({ filled }: { filled?: boolean }) => (
@@ -59,12 +61,63 @@ function ShameToast({ visible }: { visible: boolean }) {
   );
 }
 
-function ViewerCard({ image, onClose, onPrev, onNext, onLike }: ImageViewerProps) {
+function ViewerCard({ image, isOwner, onClose, onPrev, onNext, onLike, onCaptionSave }: ImageViewerProps) {
   const [showShame, setShowShame] = useState(false);
+  const [isEditingCaption, setIsEditingCaption] = useState(false);
+  const [captionDraft, setCaptionDraft] = useState(image.caption || "");
+  const [isSaving, setIsSaving] = useState(false);
+  const captionInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Sync draft when image changes (navigating between images)
+  useEffect(() => {
+    setCaptionDraft(image.caption || "");
+    setIsEditingCaption(false);
+  }, [image.id, image.caption]);
+
+  useEffect(() => {
+    if (isEditingCaption && captionInputRef.current) {
+      captionInputRef.current.focus();
+      captionInputRef.current.selectionStart = captionInputRef.current.value.length;
+    }
+  }, [isEditingCaption]);
 
   const handleDislike = () => {
     setShowShame(true);
     setTimeout(() => setShowShame(false), 1000);
+  };
+
+  const handleCaptionSave = async () => {
+    const trimmed = captionDraft.trim();
+    const newCaption = trimmed || null;
+    if (newCaption === (image.caption || null)) {
+      setIsEditingCaption(false);
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/image-captions/${image.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ caption: newCaption }),
+      });
+      if (res.ok) {
+        onCaptionSave?.(image.id, newCaption);
+        setIsEditingCaption(false);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCaptionKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleCaptionSave();
+    }
+    if (e.key === "Escape") {
+      setCaptionDraft(image.caption || "");
+      setIsEditingCaption(false);
+    }
   };
 
   return (
@@ -171,13 +224,64 @@ function ViewerCard({ image, onClose, onPrev, onNext, onLike }: ImageViewerProps
       </div>
 
       {/* Caption */}
-      {image.caption && (
+      {isOwner ? (
+        <div className="px-4 py-3 border-t-2 border-inkstain">
+          {isEditingCaption ? (
+            <div className="flex flex-col gap-2">
+              <textarea
+                ref={captionInputRef}
+                value={captionDraft}
+                onChange={(e) => setCaptionDraft(e.target.value)}
+                onKeyDown={handleCaptionKeyDown}
+                placeholder="Add a caption..."
+                rows={2}
+                maxLength={500}
+                className="w-full zissou-mono text-sm text-inkstain/80 leading-relaxed bg-transparent border-0 border-b-2 border-dashed border-inkstain/30 focus:border-solid focus:border-deep-ocean-teal outline-none resize-none"
+              />
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  onClick={() => {
+                    setCaptionDraft(image.caption || "");
+                    setIsEditingCaption(false);
+                  }}
+                  className="zissou-mono text-xs uppercase text-inkstain/40 hover:text-tracksuit-red"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCaptionSave}
+                  disabled={isSaving}
+                  className="zissou-mono text-xs uppercase text-deep-ocean-teal hover:text-tracksuit-red disabled:text-inkstain/30"
+                >
+                  {isSaving ? "Saving..." : "Save"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsEditingCaption(true)}
+              className="w-full text-left group"
+            >
+              {image.caption ? (
+                <p className="zissou-mono text-sm text-inkstain/80 leading-relaxed group-hover:text-inkstain">
+                  {image.caption}
+                  <span className="ml-2 text-inkstain/30 group-hover:text-deep-ocean-teal text-xs uppercase">Edit</span>
+                </p>
+              ) : (
+                <p className="zissou-mono text-sm text-inkstain/30 hover:text-deep-ocean-teal">
+                  + Add caption
+                </p>
+              )}
+            </button>
+          )}
+        </div>
+      ) : image.caption ? (
         <div className="px-4 py-3 border-t-2 border-inkstain">
           <p className="zissou-mono text-sm text-inkstain/80 leading-relaxed">
             {image.caption}
           </p>
         </div>
-      )}
+      ) : null}
       <ShameToast visible={showShame} />
     </div>
   );
@@ -185,10 +289,12 @@ function ViewerCard({ image, onClose, onPrev, onNext, onLike }: ImageViewerProps
 
 export function ImageViewer({
   image,
+  isOwner,
   onClose,
   onPrev,
   onNext,
   onLike,
+  onCaptionSave,
 }: ImageViewerProps) {
   const mode = usePanelMode();
 
@@ -206,10 +312,12 @@ export function ImageViewer({
     return (
       <ViewerCard
         image={image}
+        isOwner={isOwner}
         onClose={onClose}
         onPrev={onPrev}
         onNext={onNext}
         onLike={onLike}
+        onCaptionSave={onCaptionSave}
       />
     );
   }
@@ -220,9 +328,11 @@ export function ImageViewer({
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <ViewerCard
           image={image}
+          isOwner={isOwner}
           onClose={onClose}
           onPrev={onPrev}
           onNext={onNext}
+          onCaptionSave={onCaptionSave}
         />
       </div>
     </div>
