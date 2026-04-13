@@ -111,7 +111,11 @@ function CommentsPanelCard({
       const res = await fetch(`/api/posts/${postId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content.trim(), name: name.trim() || undefined, isPrivate }),
+        body: JSON.stringify({
+          content: content.trim(),
+          name: name.trim() || undefined,
+          isPrivate,
+        }),
       });
 
       if (res.status === 429) {
@@ -218,7 +222,10 @@ function CommentsPanelCard({
       </div>
 
       {/* Input Area */}
-      <form onSubmit={handleSubmit} className="border-t-2 border-inkstain px-4 py-3 space-y-2">
+      <form
+        onSubmit={handleSubmit}
+        className="border-t-2 border-inkstain px-4 py-3 space-y-2"
+      >
         <input
           type="text"
           placeholder="(Optional) Name, handle, email, or an obscure personal reference"
@@ -242,7 +249,9 @@ function CommentsPanelCard({
             onChange={(e) => setIsPrivate(e.target.checked)}
             className="accent-deep-ocean-teal"
           />
-          <span className="zissou-mono text-xs">Private (only visible to you)</span>
+          <span className="zissou-mono text-xs">
+            Private (to you and the author)
+          </span>
         </label>
         {error && (
           <p className="text-xs text-tracksuit-red zissou-mono">{error}</p>
@@ -276,7 +285,10 @@ export function CommentsPanel(props: CommentsPanelProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-inkstain/60" onClick={props.onClose} />
+      <div
+        className="absolute inset-0 bg-inkstain/60"
+        onClick={props.onClose}
+      />
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <CommentsPanelCard {...props} />
       </div>
