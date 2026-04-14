@@ -9,6 +9,13 @@
   --submarine-yellow: #e6cc57;
   --deep-ocean-teal: #4682b4;
   --inkstain: #2c2c2c;
+
+  /* Semantic theme tokens */
+  --color-brand: var(--tracksuit-red);
+  --color-brand-accent: var(--submarine-yellow);
+  --color-bg-page: var(--cream);
+  --color-bg-post: white;
+  --color-bg-nav-card: white;
 }
 
 @theme inline {
@@ -19,6 +26,13 @@
   --color-submarine-yellow: var(--submarine-yellow);
   --color-deep-ocean-teal: var(--deep-ocean-teal);
   --color-inkstain: var(--inkstain);
+
+  /* Semantic theme colors */
+  --color-brand: var(--color-brand);
+  --color-brand-accent: var(--color-brand-accent);
+  --color-bg-page: var(--color-bg-page);
+  --color-bg-post: var(--color-bg-post);
+  --color-bg-nav-card: var(--color-bg-nav-card);
 
   /* Typography */
   --font-sans: var(--font-jost);

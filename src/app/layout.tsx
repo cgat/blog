@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Jost, Lora, Courier_Prime } from "next/font/google";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import "./globals.css";
 
 const jost = Jost({
@@ -37,7 +38,9 @@ export default function RootLayout({
       <body
         className={`${jost.variable} ${lora.variable} ${courierPrime.variable} antialiased`}
       >
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );
