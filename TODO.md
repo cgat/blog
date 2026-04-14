@@ -14,10 +14,10 @@ A list of high level tasks that need to be worked on.
 - [x] Allow ability to edit publishedAt date.
 - [x] Make the Movie review previews smaller (max width half the max width of the feed). Don't show the link preview description if the letterboxd url contains "review".
 - [x] Add favicon
-- [] Add blog metadata, open graph image (use ImageResponse)
+- [x] Add blog metadata, open graph image (use ImageResponse)
 - [] Add accent/delight zsolnay tiles
 - [x] Add "read more" expand (max chars) on mobile
-- [] Add ability to add captions to photos for signed in user
+- [x] Add ability to add captions to photos for signed in user
 - [x] Add quirky guestbook. Allow private and public messages
 - [x] Improve db migration setup in coolify (currently very manual )
 - [x] Fix Copy Link in share. It's not working on iOS safari (at least)
@@ -25,3 +25,4 @@ A list of high level tasks that need to be worked on.
 - [] Magic Post editor. I want to an authenticate user feature where the user click a magic icon and the anthropic api generates suggested edits. The prompt should output 2 things: an overall critique of the style and general improvements and a list of suggested editors that focus on not changing the overall voice of the author, but proof read the post for grammatical errors, awkward sentences, and unimaginative/banals passages, which suggestions. It should be output in such a way that we could later use it in a UI tool that would highlight the specific part of the post that they are referencing.
 - [] Add search functionality
 - [] Add RSS indicator
+- [] Make the github repo private and that work with Coolify

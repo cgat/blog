@@ -37,6 +37,25 @@ export function Sidebar({ minimized = false }: SidebarProps) {
 
       {/* Spacer */}
       <div className="flex-1" />
+
+      {/* RSS link */}
+      {!minimized && (
+        <a
+          href="/feed.xml"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-1 pb-2 group"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-tracksuit-red shrink-0">
+            <circle cx="6" cy="18" r="3" fill="currentColor" />
+            <path d="M4 4a16 16 0 0 1 16 16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path d="M4 11a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
+          </svg>
+          <span className="zissou-heading text-[0.7rem] font-black text-tracksuit-red text-shadow-[1px_1px_0px_var(--submarine-yellow)] group-hover:text-inkstain transition-none">
+            RSS Feed
+          </span>
+        </a>
+      )}
     </aside>
   );
 }

@@ -53,6 +53,28 @@ export function NavCards({ minimized = false, horizontal = false }: NavCardsProp
           )}
         </Link>
       ))}
+
+      {/* RSS card — horizontal (mobile) only */}
+      {horizontal && (
+        <a
+          href="/feed.xml"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-[white] hover:bg-submarine-yellow/20 transition-none block zissou-border zissou-shadow px-3 py-2 shrink-0 max-w-[235px]"
+        >
+          <span className="zissou-heading text-xs font-bold text-tracksuit-red text-shadow-[1px_1px_0px_var(--submarine-yellow)] block">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="inline-block mr-1 -mt-0.5 text-tracksuit-red">
+              <circle cx="6" cy="18" r="3" fill="currentColor" />
+              <path d="M4 4a16 16 0 0 1 16 16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
+              <path d="M4 11a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
+            </svg>
+            RSS Feed
+          </span>
+          <span className="zissou-mono text-[10px] text-inkstain/50 leading-tight block mt-1">
+            Subscribe to new posts from the archive
+          </span>
+        </a>
+      )}
     </div>
   );
 }
