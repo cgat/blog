@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { AppLayout } from "../layout/AppLayout";
 import { Composer } from "../composites/Composer";
 import { FeedLayout } from "../composites/FeedLayout";
@@ -14,9 +14,10 @@ import { Post, PostImage, PostTag } from "@/types/post";
 interface FeedPageProps {
   includePrivate?: boolean;
   initialTags?: string[];
+  focusPostId?: string;
 }
 
-export function FeedPage({ includePrivate = false, initialTags = [] }: FeedPageProps) {
+export function FeedPage({ includePrivate = false, initialTags = [], focusPostId }: FeedPageProps) {
   const { data: session } = useSession();
   const [posts, setPosts] = useState<Post[]>([]);
   const [tags, setTags] = useState<string[]>([]);
@@ -57,23 +58,53 @@ export function FeedPage({ includePrivate = false, initialTags = [] }: FeedPageP
   };
 
   useEffect(() => {
+    const parsePosts = (posts: Post[]) =>
+      posts.map((p: Post) => ({
+        ...p,
+        createdAt: new Date(p.createdAt),
+        updatedAt: new Date(p.updatedAt),
+        publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
+      }));
+
     const loadInitial = async () => {
       setIsLoading(true);
-      const [postsData] = await Promise.all([fetchPosts(), fetchTags()]);
-      setPosts(
-        postsData.posts.map((p: Post) => ({
-          ...p,
-          createdAt: new Date(p.createdAt),
-          updatedAt: new Date(p.updatedAt),
-          publishedAt: p.publishedAt ? new Date(p.publishedAt) : null,
-        })),
-      );
-      setHasOlder(postsData.hasMore);
+
+      if (focusPostId) {
+        // Load posts around the focused post
+        const params = new URLSearchParams();
+        params.set("around", focusPostId);
+        if (includePrivate) params.set("includePrivate", "true");
+
+        const [aroundRes] = await Promise.all([
+          fetch(`/api/posts?${params}`),
+          fetchTags(),
+        ]);
+        const aroundData = await aroundRes.json();
+        setPosts(parsePosts(aroundData.posts));
+        setHasOlder(aroundData.hasMore);
+        setHasNewer(aroundData.hasNewer ?? false);
+      } else {
+        const [postsData] = await Promise.all([fetchPosts(), fetchTags()]);
+        setPosts(parsePosts(postsData.posts));
+        setHasOlder(postsData.hasMore);
+      }
+
       setIsLoading(false);
     };
 
     loadInitial();
-  }, [fetchPosts]);
+  }, [fetchPosts, focusPostId, includePrivate]);
+
+  // Scroll to focused post once loaded
+  const hasScrolled = useRef(false);
+  useEffect(() => {
+    if (!focusPostId || isLoading || hasScrolled.current) return;
+    const el = document.querySelector(`[data-post-id="${focusPostId}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: "instant", block: "center" });
+      hasScrolled.current = true;
+    }
+  }, [focusPostId, isLoading, posts]);
 
   const handlePublish = async (data: {
     content: string;

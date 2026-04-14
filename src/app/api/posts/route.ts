@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createPost, getPosts } from '@/lib/posts';
+import { createPost, getPosts, getPostsAround } from '@/lib/posts';
 import { auth } from '@/auth';
 import { computeFingerprint } from '@/lib/likes';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
+  const around = searchParams.get('around');
   const limit = parseInt(searchParams.get('limit') || '20');
   const cursor = searchParams.get('cursor');
   const direction = (searchParams.get('direction') || 'older') as 'older' | 'newer';
@@ -20,6 +21,16 @@ export async function GET(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
   const userAgent = request.headers.get('user-agent') || 'unknown';
   const fingerprint = computeFingerprint(ip, userAgent);
+
+  // "around" mode: fetch posts surrounding a specific post
+  if (around) {
+    const result = await getPostsAround(around, {
+      count: 3,
+      includePrivate,
+      fingerprint,
+    });
+    return NextResponse.json({ posts: result.posts, hasMore: result.hasOlder, hasNewer: result.hasNewer });
+  }
 
   const result = await getPosts({
     limit,

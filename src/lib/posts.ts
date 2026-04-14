@@ -277,6 +277,113 @@ export async function getPosts(options: {
   };
 }
 
+export async function getPostsAround(postId: string, options: {
+  count?: number;
+  includePrivate?: boolean;
+  fingerprint?: string;
+}): Promise<{ posts: PostWithRelations[]; hasNewer: boolean; hasOlder: boolean }> {
+  const { count = 3, includePrivate = false, fingerprint } = options;
+
+  // First get the target post to find its createdAt
+  const target = await db.query.posts.findFirst({
+    where: eq(posts.id, postId),
+  });
+
+  if (!target) {
+    return { posts: [], hasNewer: false, hasOlder: false };
+  }
+
+  const baseConditions = [
+    isNotNull(posts.publishedAt),
+    ...(includePrivate ? [] : [eq(posts.isPrivate, false)]),
+  ];
+
+  // Get N newer posts (ordered ascending, then reversed)
+  const newerResults = await db.query.posts.findMany({
+    where: and(...baseConditions, gt(posts.createdAt, target.createdAt)),
+    orderBy: posts.createdAt,
+    limit: count + 1,
+    with: { images: true, postTags: { with: { tag: true } } },
+  });
+
+  const hasNewer = newerResults.length > count;
+  const newerPosts = newerResults.slice(0, count).reverse();
+
+  // Get the target post itself
+  const targetResult = await db.query.posts.findFirst({
+    where: and(eq(posts.id, postId), ...baseConditions),
+    with: { images: true, postTags: { with: { tag: true } } },
+  });
+
+  // Get N older posts
+  const olderResults = await db.query.posts.findMany({
+    where: and(...baseConditions, lt(posts.createdAt, target.createdAt)),
+    orderBy: desc(posts.createdAt),
+    limit: count + 1,
+    with: { images: true, postTags: { with: { tag: true } } },
+  });
+
+  const hasOlder = olderResults.length > count;
+  const olderPosts = olderResults.slice(0, count);
+
+  // Combine: newer (newest first) + target + older
+  const allResults = [...newerPosts, ...(targetResult ? [targetResult] : []), ...olderPosts];
+
+  // Batch-fetch all enrichment data
+  const postIds = allResults.map(p => p.id);
+  const allUrls = allResults.flatMap((r) => extractBareUrls(r.content));
+  const linkPreviewData = await getLinkPreviewsForUrls([...new Set(allUrls)]);
+  const likeCounts = await getLikeCounts(postIds);
+  const likedIds = fingerprint ? await getLikedPostIds(postIds, fingerprint) : new Set<string>();
+  const commentCounts = await getCommentCounts(postIds);
+  const allImageIds = allResults.flatMap((p) => p.images.map((img) => img.id));
+  const imgLikeCounts = await getImageLikeCounts(allImageIds);
+  const imgLikedIds = fingerprint ? await getLikedImageIds(allImageIds, fingerprint) : new Set<string>();
+
+  return {
+    posts: allResults.map((result) => {
+      const postUrls = extractBareUrls(result.content);
+      const postPreviews: Record<string, { url: string; title: string | null; description: string | null; imageUrl: string | null; domain: string }> = {};
+      for (const url of postUrls) {
+        if (linkPreviewData[url]) {
+          postPreviews[url] = linkPreviewData[url];
+        }
+      }
+      return {
+        id: result.id,
+        content: result.content,
+        type: result.type,
+        isPrivate: result.isPrivate,
+        likeCount: likeCounts[result.id] || 0,
+        likedByMe: likedIds.has(result.id),
+        commentCount: commentCounts[result.id] || 0,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        publishedAt: result.publishedAt,
+        images: result.images.map((img) => ({
+          id: img.id,
+          url: `/api/images/${img.filename}`,
+          width: img.width,
+          height: img.height,
+          caption: img.caption ?? undefined,
+          featured: img.featured || undefined,
+          mimeType: img.mimeType ?? undefined,
+          likeCount: imgLikeCounts[img.id] || 0,
+          likedByMe: imgLikedIds.has(img.id),
+        })),
+        tags: result.postTags.map((pt) => ({
+          id: pt.tag.id,
+          name: pt.tag.name,
+          slug: pt.tag.slug,
+        })),
+        linkPreviews: postPreviews,
+      };
+    }),
+    hasNewer,
+    hasOlder,
+  };
+}
+
 export async function updatePost(id: string, input: Partial<CreatePostInput> & { publish?: boolean; imageIds?: string[]; publishedAt?: string }): Promise<PostWithRelations | null> {
   const existing = await getPost(id, { includePrivate: true, includeDrafts: true });
   if (!existing) return null;
