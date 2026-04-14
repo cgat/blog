@@ -35,7 +35,7 @@ export function NavCards({ minimized = false, horizontal = false }: NavCardsProp
         <Link
           key={item.href}
           href={item.href}
-          className={`bg-[white] hover:bg-submarine-yellow/20 transition-none block ${
+          className={`bg-nav-card hover:bg-submarine-yellow/20 transition-none block ${
             minimized ? "zissou-border text-center" : "zissou-border zissou-shadow px-3 py-2"
           } ${horizontal ? "shrink-0 max-w-[235px]" : ""}`}
         >
@@ -60,7 +60,7 @@ export function NavCards({ minimized = false, horizontal = false }: NavCardsProp
           href="/feed.xml"
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-[white] hover:bg-submarine-yellow/20 transition-none block zissou-border zissou-shadow px-3 py-2 shrink-0 max-w-[235px]"
+          className="bg-nav-card hover:bg-submarine-yellow/20 transition-none block zissou-border zissou-shadow px-3 py-2 shrink-0 max-w-[235px]"
         >
           <span className="zissou-heading text-xs font-bold text-tracksuit-red text-shadow-[1px_1px_0px_var(--submarine-yellow)] block">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="inline-block mr-1 -mt-0.5 text-tracksuit-red">

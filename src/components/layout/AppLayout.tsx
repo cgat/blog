@@ -49,7 +49,7 @@ export function AppLayout({ children, panel }: AppLayoutProps) {
 
   return (
     <PanelModeContext.Provider value={panelMode}>
-      <div className="min-h-screen bg-cream">
+      <div className="min-h-screen bg-page">
         {/* Mobile: sticky header */}
         <StickyMobileHeader />
 

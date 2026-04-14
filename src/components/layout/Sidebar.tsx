@@ -2,12 +2,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import { NavCards } from "../composites/NavCards";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface SidebarProps {
   minimized?: boolean;
 }
 
 export function Sidebar({ minimized = false }: SidebarProps) {
+  const theme = useTheme();
+  const Branding = theme.Branding;
   const [showRssCard, setShowRssCard] = useState(false);
   const [copied, setCopied] = useState(false);
   const rssRef = useRef<HTMLDivElement>(null);
@@ -63,25 +66,19 @@ export function Sidebar({ minimized = false }: SidebarProps) {
   return (
     <aside className="sticky top-0 h-screen p-4 flex flex-col overflow-hidden">
       {/* Logo + Branding */}
-      <div className="flex flex-row items-start gap-1">
+      {minimized ? (
         <a href="/">
           <img
-            src="/filing_cabinet2.svg"
-            alt="The Archive of Small Things"
+            src={theme.logo}
+            alt={theme.siteName.join(" ")}
             width="56px"
             height="56px"
             className="shrink-0 w-[2.6rem]"
           />
         </a>
-        {!minimized && (
-          <a href="/">
-            <h2 className="zissou-heading text-[1.37rem] text-tracksuit-red font-black text-shadow-[2px_2px_0px_var(--submarine-yellow)] tracking-[0.2px]! leading-[1.1]! flex flex-col">
-              <span>The Archive</span>
-              <span className="inline-block text-[1rem]">of Small Things</span>
-            </h2>
-          </a>
-        )}
-      </div>
+      ) : (
+        <Branding />
+      )}
 
       {/* Nav Cards */}
       <div className="mt-6">

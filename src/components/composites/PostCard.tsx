@@ -177,7 +177,7 @@ export function PostCard({
 
   if (isEditing && editComposer) {
     return (
-      <article data-post-id={post.id} className="bg-[white] zissou-border zissou-shadow p-6">
+      <article data-post-id={post.id} className="bg-post zissou-border zissou-shadow p-6">
         {editComposer}
       </article>
     );
@@ -192,7 +192,7 @@ export function PostCard({
   }).format(post.createdAt);
 
   return (
-    <article data-post-id={post.id} className="bg-[white] zissou-border zissou-shadow p-6">
+    <article data-post-id={post.id} className="bg-post zissou-border zissou-shadow p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">

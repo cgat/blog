@@ -2,12 +2,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import { NavCards } from "../composites/NavCards";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface HeaderProps {
   onNavToggle?: (open: boolean) => void;
 }
 
 export function Header({ onNavToggle }: HeaderProps) {
+  const theme = useTheme();
+  const Branding = theme.Branding;
   const [showNav, setShowNav] = useState(false);
 
   const toggleNav = (open: boolean) => {
@@ -28,21 +31,9 @@ export function Header({ onNavToggle }: HeaderProps) {
   }, []);
 
   return (
-    <header className="border-b-2 border-inkstain bg-[white] sticky top-0 z-40" ref={navRef}>
+    <header className="border-b-2 border-inkstain bg-nav-card sticky top-0 z-40" ref={navRef}>
       <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-        <a href="/" className="flex flex-row">
-          <img
-            src="/filing_cabinet2.svg"
-            alt=""
-            width="56px"
-            height="56px"
-            className="mr-1 w-[2.6rem]"
-          />
-          <h2 className="zissou-heading text-[1.37rem] text-tracksuit-red font-black text-shadow-[2px_2px_0px_var(--submarine-yellow)] tracking-[0.2px]! leading-[1.1]! flex flex-col">
-            <span>The Archive</span>
-            <span className="inline-block text-[1rem]">of Small Things</span>
-          </h2>
-        </a>
+        <Branding />
 
         {/* Folder tab toggle */}
         <button
