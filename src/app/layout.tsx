@@ -20,7 +20,7 @@ const courierPrime = Courier_Prime({
 });
 
 export const metadata: Metadata = {
-  title: "The Arhcive of Small Things",
+  title: "The Archive of Small Things",
   description: "My corner of the internet",
 };
 

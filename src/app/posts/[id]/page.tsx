@@ -1,5 +1,6 @@
 import { FeedPage } from '@/components/pages/FeedPage';
 import { getPost } from '@/lib/posts';
+import { extractTitle } from '@/lib/og-utils';
 import { Metadata } from 'next';
 
 interface Props {
@@ -14,9 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Post not found' };
   }
 
-  const title = post.content.slice(0, 60) || 'Post';
+  const title = extractTitle(post);
   const description = post.content.slice(0, 200);
-  const image = post.images[0]?.url || `/api/og/${id}`;
 
   return {
     title,
@@ -26,13 +26,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: 'article',
       url: `/posts/${id}`,
-      images: [{ url: image }],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [image],
     },
   };
 }
