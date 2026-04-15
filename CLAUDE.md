@@ -113,7 +113,7 @@ Hosted on a Hetzner VPS (CPX series, Ubuntu) with Coolify as the deployment plat
 - **Server**: Hetzner CPX (2 vCPU, 2GB RAM + 2GB swap)
 - **IP**: `5.78.103.15`
 - **Coolify dashboard**: `http://5.78.103.15:8000`
-- **App URL**: `http://ogsg408w0488s8g8sgk0004o.5.78.103.15.sslip.io` (sslip.io until a real domain is configured)
+- **App URL**: `https://archiveofsmallthings.xyz`
 - **Build**: Nixpacks (auto-detected Node.js)
 
 ### Persistent Storage (Coolify Storages tab)

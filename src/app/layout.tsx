@@ -21,6 +21,7 @@ const courierPrime = Courier_Prime({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
   title: "The Archive of Small Things",
   description: "My corner of the internet",
 };
