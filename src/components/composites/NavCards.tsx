@@ -2,26 +2,45 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 const NAV_ITEMS = [
-  { emoji: "📬", label: "About", href: "/about", desc: "A postcard from the archivist explaining the purpose of this collection" },
-  { emoji: "📓", label: "Guestbook", href: "/guestbook", desc: "Leave a note for the archive and see what other visitors have written" },
-  { emoji: "📸", label: "The Little Picture", href: "/thelittlepicture", desc: "A curated feed of small photographs and visual moments worth keeping" },
+  {
+    emoji: "📬",
+    label: "About",
+    href: "/about",
+    desc: "A postcard from the archivist explaining the purpose of this collection",
+  },
+  {
+    emoji: "📓",
+    label: "Guestbook",
+    href: "/guestbook",
+    desc: "Leave a note for the archive and see what other visitors have written",
+  },
+  {
+    emoji: "📸",
+    label: "The Little Picture",
+    href: "/thelittlepicture",
+    desc: "A curated feed of small photographs and visual moments worth keeping",
+  },
 ];
-
-
 
 interface NavCardsProps {
   minimized?: boolean;
   horizontal?: boolean;
 }
 
-export function NavCards({ minimized = false, horizontal = false }: NavCardsProps) {
+export function NavCards({
+  minimized = false,
+  horizontal = false,
+}: NavCardsProps) {
   const pathname = usePathname();
+  const theme = useTheme();
+  const isThemedRoute = theme.id !== "default";
 
   const visibleItems = NAV_ITEMS.filter((item) => item.href !== pathname);
 
-  if (visibleItems.length === 0) return null;
+  if (visibleItems.length === 0 && !isThemedRoute) return null;
 
   return (
     <div
@@ -31,12 +50,40 @@ export function NavCards({ minimized = false, horizontal = false }: NavCardsProp
           : "flex flex-col gap-3"
       }
     >
+      {/* Return to Archive card — shown on themed routes */}
+      {isThemedRoute && !minimized && (
+        <Link
+          href="/"
+          className={`bg-cream hover:bg-submarine-yellow/20 transition-none block zissou-border zissou-shadow px-3 py-2 ${
+            horizontal ? "shrink-0 max-w-[235px]" : ""
+          }`}
+        >
+          <span className="zissou-heading text-[10px] font-bold text-inkstain/50 block">
+            Return To
+          </span>
+          <span className="zissou-heading text-xs font-bold text-tracksuit-red text-shadow-[1px_1px_0px_var(--submarine-yellow)] block mt-0.5 leading-tight">
+            The Archive of Small Things
+          </span>
+        </Link>
+      )}
+      {isThemedRoute && minimized && (
+        <Link
+          href="/"
+          className="zissou-border text-center bg-cream"
+          title="Return to The Archive of Small Things"
+        >
+          <span className="text-lg">🗄️</span>
+        </Link>
+      )}
+
       {visibleItems.map((item) => (
         <Link
           key={item.href}
           href={item.href}
           className={`bg-nav-card hover:bg-submarine-yellow/20 transition-none block ${
-            minimized ? "zissou-border text-center" : "zissou-border zissou-shadow px-3 py-2"
+            minimized
+              ? "zissou-border text-center"
+              : "zissou-border zissou-shadow px-3 py-2"
           } ${horizontal ? "shrink-0 max-w-[235px]" : ""}`}
         >
           {minimized ? (
@@ -62,11 +109,29 @@ export function NavCards({ minimized = false, horizontal = false }: NavCardsProp
           rel="noopener noreferrer"
           className="bg-nav-card hover:bg-submarine-yellow/20 transition-none block zissou-border zissou-shadow px-3 py-2 shrink-0 max-w-[235px]"
         >
-          <span className="zissou-heading text-xs font-bold text-tracksuit-red text-shadow-[1px_1px_0px_var(--submarine-yellow)] block">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="inline-block mr-1 -mt-0.5 text-tracksuit-red">
+          <span className="zissou-heading text-xs font-bold text-brand text-shadow-[1px_1px_0px_var(--color-brand-accent)] block">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="inline-block mr-1 -mt-0.5 text-brand"
+            >
               <circle cx="6" cy="18" r="3" fill="currentColor" />
-              <path d="M4 4a16 16 0 0 1 16 16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
-              <path d="M4 11a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
+              <path
+                d="M4 4a16 16 0 0 1 16 16"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <path
+                d="M4 11a9 9 0 0 1 9 9"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                fill="none"
+              />
             </svg>
             RSS Feed
           </span>

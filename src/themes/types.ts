@@ -13,5 +13,6 @@ export interface Theme {
   siteName: [string, string];
   logo: string;
   Branding: ComponentType;
+  BackgroundDecoration?: ComponentType;
   colors?: ThemeColors;
 }

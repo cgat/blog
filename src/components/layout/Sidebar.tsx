@@ -95,12 +95,12 @@ export function Sidebar({ minimized = false }: SidebarProps) {
             onClick={() => setShowRssCard(!showRssCard)}
             className="flex items-center gap-2 px-1 pb-2 group cursor-pointer"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-tracksuit-red shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-brand shrink-0">
               <circle cx="6" cy="18" r="3" fill="currentColor" />
               <path d="M4 4a16 16 0 0 1 16 16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
               <path d="M4 11a9 9 0 0 1 9 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
             </svg>
-            <span className="zissou-heading text-[0.7rem] font-black text-tracksuit-red text-shadow-[1px_1px_0px_var(--submarine-yellow)] group-hover:text-inkstain transition-none">
+            <span className="zissou-heading text-[0.7rem] font-black text-brand text-shadow-[1px_1px_0px_var(--color-brand-accent)] group-hover:text-inkstain transition-none">
               RSS Feed
             </span>
           </button>
@@ -115,7 +115,7 @@ export function Sidebar({ minimized = false }: SidebarProps) {
               </p>
               <button
                 onClick={copyFeedUrl}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-tracksuit-red text-cream zissou-heading text-xs font-bold hover:bg-inkstain transition-none cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand text-cream zissou-heading text-xs font-bold hover:bg-inkstain transition-none cursor-pointer"
               >
                 {copied ? (
                   <>

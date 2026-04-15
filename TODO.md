@@ -2,13 +2,13 @@ A list of high level tasks that need to be worked on.
 
 - [] In the composer, we need a better tag adding UI component. Likely a searchable combobox. This isn't blog viewer facing, so lower priority
 - [] Add a small delight element that is interlocked gears turning. This codepen example should be reference for implementation (https://codepen.io/LindsayMac/pen/MwrONL). If you can't access the code ask me to provide it. We'll use the 2 gear solution, though we'll have to figure out placement. In our case, I'd like this element to turn at the pace scrolling and when something is being fetched or a specific animation triggers it.
-- [] Make the site themeable. Themes can be stored as code or json (we don't need a UI). Things that should be themable: site logo, site name that appears in header (e.g the archive of small things), the component used to render the site name that appears in the header, the color palette, the background colour, navigation card bg colour, post bg colour.
-  - [] Once the themability is in place, create a theme for "The Little Picture" tag. This includes generating a new logo (blocky wes anderson style camera). Palette is mostly blue tones.
+- [x] Make the site themeable. Themes can be stored as code or json (we don't need a UI). Things that should be themable: site logo, site name that appears in header (e.g the archive of small things), the component used to render the site name that appears in the header, the color palette, the background colour, navigation card bg colour, post bg colour.
+  - [x] Once the themability is in place, create a theme for "The Little Picture" tag. This includes generating a new logo (blocky wes anderson style camera). Palette is mostly blue tones.
 - [x] register archiveofsmallthings.xyz. Setup SSL (let's encrypt) and make it all work with hetzner and Coolify
 - [] Ensure we have a easy database backup scheme
 - [x] Add anonymous post and photo likes.
 - [] Add the ability for anonymous users to comment on posts or photos. Comments can be public or private. Commenters can add a name of a max length of 30 characters.
-- [] Set max height of the photo viewer cotainer to be 98vh
+- [x] Set max height of the photo viewer cotainer to be 98vh
 - [x] Sticky mobile nav header (scroll responsive header which responds the scroll direction)
 - [x] Add Tag cards to navigation sections.
 - [x] Allow ability to edit publishedAt date.
@@ -24,5 +24,5 @@ A list of high level tasks that need to be worked on.
 - [x] Migrate Blogger content to archive of small things
 - [] Magic Post editor. I want to an authenticate user feature where the user click a magic icon and the anthropic api generates suggested edits. The prompt should output 2 things: an overall critique of the style and general improvements and a list of suggested editors that focus on not changing the overall voice of the author, but proof read the post for grammatical errors, awkward sentences, and unimaginative/banals passages, which suggestions. It should be output in such a way that we could later use it in a UI tool that would highlight the specific part of the post that they are referencing.
 - [] Add search functionality
-- [] Add RSS indicator
+- [x] Add RSS indicator
 - [] Make the github repo private and that work with Coolify

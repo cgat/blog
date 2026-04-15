@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useState, createContext, useContext } from "react
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 const PANEL_BREAKPOINT = 1500;
 
@@ -35,6 +36,8 @@ function StickyMobileHeader() {
 export function AppLayout({ children, panel }: AppLayoutProps) {
   const hasPanel = !!panel;
   const [isWide, setIsWide] = useState(false);
+  const theme = useTheme();
+  const BackgroundDecoration = theme.BackgroundDecoration;
 
   useEffect(() => {
     const mql = window.matchMedia(`(min-width: ${PANEL_BREAKPOINT}px)`);
@@ -49,7 +52,8 @@ export function AppLayout({ children, panel }: AppLayoutProps) {
 
   return (
     <PanelModeContext.Provider value={panelMode}>
-      <div className="min-h-screen bg-page">
+      <div className="min-h-screen bg-page relative">
+        {BackgroundDecoration && <BackgroundDecoration />}
         {/* Mobile: sticky header */}
         <StickyMobileHeader />
 

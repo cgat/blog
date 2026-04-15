@@ -20,7 +20,7 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(
           focus:outline-none focus:ring-2 focus:ring-deep-ocean-teal focus:ring-offset-1
           ${selected
             ? 'bg-deep-ocean-teal text-white'
-            : 'bg-cream text-inkstain hover:bg-submarine-yellow'
+            : 'bg-page text-inkstain hover:bg-submarine-yellow'
           }
           ${className}
         `}
