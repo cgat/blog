@@ -1,6 +1,12 @@
 "use client";
 
-import { ReactNode, useEffect, useState, createContext, useContext } from "react";
+import {
+  ReactNode,
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+} from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
@@ -25,7 +31,7 @@ function StickyMobileHeader() {
   return (
     <div
       className={`md:hidden sticky top-0 z-40 transition-transform duration-300 ${
-        hidden && !navOpen ? '-translate-y-full' : 'translate-y-0'
+        hidden && !navOpen ? "-translate-y-full" : "translate-y-0"
       }`}
     >
       <Header onNavToggle={setNavOpen} />
@@ -71,7 +77,7 @@ export function AppLayout({ children, panel }: AppLayoutProps) {
 
           {/* Content column */}
           <main className="px-4 py-8 min-w-0 flex flex-col items-center">
-            <div className="max-w-4xl">{children}</div>
+            <div className="max-w-4xl z-10">{children}</div>
           </main>
 
           {/* Panel column — only when wide enough */}
