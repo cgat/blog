@@ -15,7 +15,7 @@ function isVideo(item: ImageItem) {
   return item.mimeType?.startsWith('video/');
 }
 
-function MediaThumb({ item, alt, fill, className }: { item: ImageItem; alt: string; fill?: boolean; className?: string }) {
+function MediaThumb({ item, alt, fill, className, sizes }: { item: ImageItem; alt: string; fill?: boolean; className?: string; sizes?: string }) {
   if (isVideo(item)) {
     return (
       <video
@@ -30,11 +30,13 @@ function MediaThumb({ item, alt, fill, className }: { item: ImageItem; alt: stri
     );
   }
   return fill ? (
-    <Image src={item.url} alt={alt} fill className={className} />
+    <Image src={item.url} alt={alt} fill className={className} sizes={sizes} />
   ) : (
-    <Image src={item.url} alt={alt} width={item.width} height={item.height} className={className} />
+    <Image src={item.url} alt={alt} width={item.width} height={item.height} className={className} sizes={sizes} />
   );
 }
+
+const GRID_CELL_SIZES = '(max-width: 768px) 24vw, 220px';
 
 function CaptionIndicator() {
   return (
@@ -118,7 +120,7 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
               className="relative zissou-border overflow-hidden cursor-pointer"
               onClick={() => onImageClick?.(img)}
             >
-              <MediaThumb item={img} alt={img.alt || `Image ${index + 2}`} fill className="object-cover" />
+              <MediaThumb item={img} alt={img.alt || `Image ${index + 2}`} fill className="object-cover" sizes={GRID_CELL_SIZES} />
               {img.caption && <CaptionIndicator />}
               {!expanded && index === displayRest.length - 1 && remainingCount > 0 && (
                 <div className="absolute inset-0 bg-inkstain/60 flex items-center justify-center">
@@ -166,7 +168,7 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
               className="relative zissou-border aspect-square overflow-hidden cursor-pointer"
               onClick={() => onImageClick?.(img)}
             >
-              <MediaThumb item={img} alt={img.alt || `Image ${index + 2}`} fill className="object-cover" />
+              <MediaThumb item={img} alt={img.alt || `Image ${index + 2}`} fill className="object-cover" sizes={GRID_CELL_SIZES} />
               {img.caption && <CaptionIndicator />}
               {!expanded && index === displayRest.length - 1 && remainingCount > 0 && (
                 <div className="absolute inset-0 bg-inkstain/60 flex items-center justify-center">
