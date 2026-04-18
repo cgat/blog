@@ -44,10 +44,9 @@ export function MarkdownRenderer({
               if (
                 React.isValidElement(child) &&
                 child.type === "a" &&
-                typeof child.props.href === "string"
+                typeof (child.props as { href?: string }).href === "string"
               ) {
-                const href = child.props.href;
-                const text = child.props.children;
+                const { href, children: text } = child.props as { href: string; children?: unknown };
                 if (
                   typeof text === "string" &&
                   text === href &&

@@ -31,6 +31,7 @@ export interface PostWithRelations {
     height: number;
     caption?: string;
     featured?: boolean;
+    mimeType?: string;
     likeCount: number;
     likedByMe: boolean;
   }[];

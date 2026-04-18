@@ -136,7 +136,7 @@ const CommentIcon = () => (
 function ShameToast({ visible }: { visible: boolean }) {
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-300 ${
+      className={`fixed inset-0 z-100 flex items-center justify-center transition-opacity duration-300 ${
         visible ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     >
@@ -177,7 +177,10 @@ export function PostCard({
 
   if (isEditing && editComposer) {
     return (
-      <article data-post-id={post.id} className="bg-post zissou-border zissou-shadow p-6">
+      <article
+        data-post-id={post.id}
+        className="bg-post zissou-border zissou-shadow p-6"
+      >
         {editComposer}
       </article>
     );
@@ -192,7 +195,10 @@ export function PostCard({
   }).format(post.createdAt);
 
   return (
-    <article data-post-id={post.id} className="bg-post zissou-border zissou-shadow p-6">
+    <article
+      data-post-id={post.id}
+      className="bg-post zissou-border zissou-shadow p-6"
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -225,7 +231,11 @@ export function PostCard({
         </div>
         <div className="flex gap-1">
           <div className="relative">
-            <IconButton icon={<ShareIcon />} label="Share" onClick={() => setShowShareMenu(!showShareMenu)} />
+            <IconButton
+              icon={<ShareIcon />}
+              label="Share"
+              onClick={() => setShowShareMenu(!showShareMenu)}
+            />
             <ShareMenu
               postUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/posts/${post.id}`}
               postTitle={post.content.slice(0, 60)}
@@ -274,7 +284,24 @@ export function PostCard({
       {/* Images */}
       {post.images.length > 0 && (
         <div className="mb-4">
-          <ImageGrid images={post.images} expanded onImageClick={onImageClick} />
+          <ImageGrid
+            images={post.images}
+            expanded
+            onImageClick={
+              onImageClick && ((img) => onImageClick(img as PostImage))
+            }
+          />
+          {(() => {
+            const featured =
+              post.images.find((img) => img.featured) || post.images[0];
+            return featured?.caption ? (
+              <div className="mt-2 bg-cream/60 zissou-border px-3 py-2">
+                <p className="zissou-mono text-xs text-inkstain italic leading-relaxed line-clamp-2">
+                  {featured.caption}
+                </p>
+              </div>
+            ) : null;
+          })()}
         </div>
       )}
 
@@ -293,8 +320,8 @@ export function PostCard({
           onClick={onLike}
           className={`flex items-center gap-1.5 transition-transform duration-150 active:scale-110 ${
             post.likedByMe
-              ? 'text-deep-ocean-teal'
-              : 'text-inkstain/30 hover:text-inkstain/60'
+              ? "text-deep-ocean-teal"
+              : "text-inkstain/30 hover:text-inkstain/60"
           }`}
         >
           <ThumbsUpIcon filled={post.likedByMe} />

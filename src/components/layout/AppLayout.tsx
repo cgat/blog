@@ -65,7 +65,7 @@ export function AppLayout({ children, panel }: AppLayoutProps) {
 
         {/* Desktop: CSS grid layout */}
         <div
-          className="hidden md:grid min-h-screen transition-[grid-template-columns] duration-300 ease-in-out"
+          className="hidden md:grid min-h-screen"
           style={{
             gridTemplateColumns: showInlinePanel
               ? "64px 56rem 1fr"

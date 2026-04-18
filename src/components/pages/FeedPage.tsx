@@ -7,7 +7,7 @@ import { Composer } from "../composites/Composer";
 import { FeedLayout } from "../composites/FeedLayout";
 import { ConfirmDialog } from "../composites/ConfirmDialog";
 
-import { ImageViewer } from "../composites/ImageViewer";
+import { ProjectorViewer } from "../composites/ProjectorViewer";
 import { CommentsPanel } from "../composites/CommentsPanel";
 import { Post, PostImage, PostTag } from "@/types/post";
 
@@ -365,16 +365,6 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
     setCommentPostId(null); // close comments if open
   };
 
-  const handleViewerPrev =
-    viewerPost && viewerImageIndex > 0
-      ? () => setViewerImage(viewerPost.images[viewerImageIndex - 1])
-      : undefined;
-
-  const handleViewerNext =
-    viewerPost && viewerImageIndex < viewerPost.images.length - 1
-      ? () => setViewerImage(viewerPost.images[viewerImageIndex + 1])
-      : undefined;
-
   const handleViewerClose = () => {
     setViewerImage(null);
     setViewerPostId(null);
@@ -493,20 +483,22 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
       onClose={handleCommentClose}
       onCommentCountChange={handleCommentCountChange}
     />
-  ) : viewerImage ? (
-    <ImageViewer
-      image={viewerImage}
-      isOwner={!!session}
-      onClose={handleViewerClose}
-      onPrev={handleViewerPrev}
-      onNext={handleViewerNext}
-      onLike={handleImageLike}
-      onCaptionSave={handleCaptionSave}
-      onFeaturedToggle={handleFeaturedToggle}
-    />
   ) : null;
 
   return (
+    <>
+    {viewerImage && viewerPost && (
+      <ProjectorViewer
+        images={viewerPost.images}
+        currentIndex={viewerImageIndex}
+        isOwner={!!session}
+        onClose={handleViewerClose}
+        onNavigate={(i) => setViewerImage(viewerPost.images[i])}
+        onLike={handleImageLike}
+        onCaptionSave={handleCaptionSave}
+        onFeaturedToggle={handleFeaturedToggle}
+      />
+    )}
     <AppLayout panel={panel}>
       {session && (
         <div className="mb-8">
@@ -591,5 +583,6 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
       />
 
     </AppLayout>
+    </>
   );
 }

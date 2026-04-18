@@ -8,7 +8,8 @@ const meta: Meta<typeof PostCard> = {
   parameters: {
     docs: {
       description: {
-        component: 'Fig 2.0: The Dispatch Record. A complete unit of published communication, mounted behind glass. Contains the full text of the dispatch, any accompanying photographic evidence, and its official classification tablets.',
+        component:
+          "Fig 2.0: The Dispatch Record. A complete unit of published communication, mounted behind glass. Contains the full text of the dispatch, any accompanying photographic evidence, and its official classification tablets.",
       },
     },
   },
@@ -18,36 +19,64 @@ export default meta;
 type Story = StoryObj<typeof PostCard>;
 
 const textPost: Post = {
-  id: '1',
-  content: 'Just finished reading **Thinking, Fast and Slow** by Daniel Kahneman. Incredible insights into how we make decisions. Highly recommend for anyone interested in psychology or behavioral economics.',
-  type: 'text',
+  id: "1",
+  content:
+    "Just finished reading **Thinking, Fast and Slow** by Daniel Kahneman. Incredible insights into how we make decisions. Highly recommend for anyone interested in psychology or behavioral economics.",
+  type: "text",
   images: [],
   tags: [
-    { id: '1', name: 'books', slug: 'books' },
-    { id: '2', name: 'thoughts', slug: 'thoughts' },
+    { id: "1", name: "books", slug: "books" },
+    { id: "2", name: "thoughts", slug: "thoughts" },
   ],
-  createdAt: new Date('2026-01-30T10:30:00'),
-  publishedAt: new Date('2026-01-30T10:30:00'),
+  linkPreviews: {},
+  isPrivate: false,
+  likeCount: 0,
+  likedByMe: false,
+  commentCount: 0,
+  createdAt: new Date("2026-01-30T10:30:00"),
+  updatedAt: new Date("2026-01-30T10:30:00"),
+  publishedAt: new Date("2026-01-30T10:30:00"),
 };
 
 const photoPost: Post = {
-  id: '2',
-  content: 'Beautiful sunset at the beach today. Sometimes you just need to stop and appreciate the moment.',
-  type: 'photo',
+  id: "2",
+  content:
+    "Beautiful sunset at the beach today. Sometimes you just need to stop and appreciate the moment.",
+  type: "photo",
   images: [
-    { id: '1', url: 'https://picsum.photos/seed/sunset/800/600', width: 800, height: 600 },
-    { id: '2', url: 'https://picsum.photos/seed/beach/800/600', width: 800, height: 600 },
+    {
+      id: "1",
+      url: "https://picsum.photos/seed/sunset/800/600",
+      width: 800,
+      height: 600,
+      likeCount: 0,
+      likedByMe: false,
+    },
+    {
+      id: "2",
+      url: "https://picsum.photos/seed/beach/800/600",
+      width: 800,
+      height: 600,
+      likeCount: 0,
+      likedByMe: false,
+    },
   ],
   tags: [
-    { id: '3', name: 'photography', slug: 'photography' },
-    { id: '4', name: 'travel', slug: 'travel' },
+    { id: "3", name: "photography", slug: "photography" },
+    { id: "4", name: "travel", slug: "travel" },
   ],
-  createdAt: new Date('2026-01-29T18:45:00'),
-  publishedAt: new Date('2026-01-29T18:45:00'),
+  linkPreviews: {},
+  isPrivate: false,
+  likeCount: 0,
+  likedByMe: false,
+  commentCount: 0,
+  createdAt: new Date("2026-01-29T18:45:00"),
+  updatedAt: new Date("2026-01-29T18:45:00"),
+  publishedAt: new Date("2026-01-29T18:45:00"),
 };
 
 const longPost: Post = {
-  id: '3',
+  id: "3",
   content: `# My Thoughts on Modern Web Development
 
 The landscape of web development has changed dramatically over the past few years. We've seen the rise of meta-frameworks like Next.js, Remix, and SvelteKit that blur the line between client and server.
@@ -59,13 +88,17 @@ The landscape of web development has changed dramatically over the past few year
 3. **TypeScript everywhere** - Type safety is no longer optional
 
 What do you think about these trends?`,
-  type: 'text',
+  type: "text",
   images: [],
-  tags: [
-    { id: '5', name: 'tech', slug: 'tech' },
-  ],
-  createdAt: new Date('2026-01-28T14:00:00'),
-  publishedAt: new Date('2026-01-28T14:00:00'),
+  tags: [{ id: "5", name: "tech", slug: "tech" }],
+  linkPreviews: {},
+  isPrivate: false,
+  likeCount: 0,
+  likedByMe: false,
+  commentCount: 0,
+  createdAt: new Date("2026-01-28T14:00:00"),
+  updatedAt: new Date("2026-01-28T14:00:00"),
+  publishedAt: new Date("2026-01-28T14:00:00"),
 };
 
 export const TextPost: Story = {
@@ -90,8 +123,7 @@ export const WithOwnerActions: Story = {
   args: {
     post: textPost,
     isOwner: true,
-    onEdit: () => alert('Edit clicked'),
-    onDelete: () => alert('Delete clicked'),
-    onShare: () => alert('Share clicked'),
+    onEdit: () => alert("Edit clicked"),
+    onDelete: () => alert("Delete clicked"),
   },
 };
