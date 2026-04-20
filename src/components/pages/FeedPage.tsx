@@ -7,7 +7,7 @@ import { Composer } from "../composites/Composer";
 import { FeedLayout } from "../composites/FeedLayout";
 import { ConfirmDialog } from "../composites/ConfirmDialog";
 
-import { ProjectorViewer } from "../composites/ProjectorViewer";
+import { ImageViewer } from "../composites/ImageViewer";
 import { CommentsPanel } from "../composites/CommentsPanel";
 import { Post, PostImage, PostTag } from "@/types/post";
 
@@ -488,7 +488,7 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
   return (
     <>
     {viewerImage && viewerPost && (
-      <ProjectorViewer
+      <ImageViewer
         images={viewerPost.images}
         currentIndex={viewerImageIndex}
         isOwner={!!session}

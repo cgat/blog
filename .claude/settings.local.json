@@ -33,12 +33,17 @@
       "Bash(git -C /Users/cgat/code/personal/blog check-ignore -q .worktrees)",
       "Bash(xargs find:*)",
       "Read(//tmp/**)",
-      "Bash(xargs -I{} sh -c 'ls -la /proc/{}/fd/1 2>/dev/null || echo \"check terminal\"')"
+      "Bash(xargs -I{} sh -c 'ls -la /proc/{}/fd/1 2>/dev/null || echo \"check terminal\"')",
+      "WebFetch(domain:registry.npmjs.org)"
     ],
     "deny": [
       "Bash(git push*)",
       "Bash(git reset --hard*)",
       "Bash(rm -rf /*)"
     ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
   }
 }
