@@ -36,50 +36,109 @@ function Media({ image }: { image: PostImage }) {
     );
   }
   return (
-    <Image
-      src={image.url}
-      alt={image.alt || "Image"}
-      width={image.width}
-      height={image.height}
-      sizes="(max-width: 768px) 90vw, min(90vw, 1400px)"
-      className="block"
+    <div
+      className="relative"
       style={{
-        maxHeight: "85vh",
-        maxWidth: "min(90vw, 1400px)",
-        width: "auto",
-        height: "auto",
+        aspectRatio: `${image.width} / ${image.height}`,
+        width: `min(90vw, 1400px, ${image.width}px, calc(85vh * ${image.width} / ${image.height}))`,
       }}
-    />
+    >
+      <Image
+        src={image.url}
+        alt={image.alt || "Image"}
+        fill
+        sizes="(max-width: 768px) 90vw, min(90vw, 1400px)"
+        className="object-contain"
+      />
+    </div>
   );
 }
 
 function IconClose({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <path d="M6 6l12 12M18 6l-12 12" />
     </svg>
   );
 }
 
-function IconChevron({ direction, className }: { direction: "left" | "right"; className?: string }) {
+function IconChevron({
+  direction,
+  className,
+}: {
+  direction: "left" | "right";
+  className?: string;
+}) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      {direction === "left" ? <path d="M15 6l-6 6 6 6" /> : <path d="M9 6l6 6-6 6" />}
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {direction === "left" ? (
+        <path d="M15 6l-6 6 6 6" />
+      ) : (
+        <path d="M9 6l6 6-6 6" />
+      )}
     </svg>
   );
 }
 
-function IconHeart({ filled, className }: { filled: boolean; className?: string }) {
+function IconHeart({
+  filled,
+  className,
+}: {
+  filled: boolean;
+  className?: string;
+}) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
     </svg>
   );
 }
 
-function IconPin({ filled, className }: { filled: boolean; className?: string }) {
+function IconPin({
+  filled,
+  className,
+}: {
+  filled: boolean;
+  className?: string;
+}) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <path d="M12 2l2.39 4.84L20 8l-4 3.9.94 5.5L12 14.77 7.06 17.4 8 11.9 4 8l5.61-1.16L12 2z" />
     </svg>
   );
@@ -87,7 +146,16 @@ function IconPin({ filled, className }: { filled: boolean; className?: string })
 
 function IconPencil({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
     </svg>
@@ -96,7 +164,16 @@ function IconPencil({ className }: { className?: string }) {
 
 function IconCheck({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <path d="M20 6L9 17l-5-5" />
     </svg>
   );
@@ -441,10 +518,19 @@ function CaptionPanel({
 
           {isEditing ? (
             <div className="flex items-center gap-1">
-              <IconAction onClick={onCancelEdit} ariaLabel="Cancel" disabled={saving}>
+              <IconAction
+                onClick={onCancelEdit}
+                ariaLabel="Cancel"
+                disabled={saving}
+              >
                 <IconClose className="h-4 w-4" />
               </IconAction>
-              <IconAction onClick={onSaveEdit} ariaLabel="Save caption" disabled={saving} primary>
+              <IconAction
+                onClick={onSaveEdit}
+                ariaLabel="Save caption"
+                disabled={saving}
+                primary
+              >
                 <IconCheck className="h-4 w-4" />
               </IconAction>
             </div>
@@ -465,7 +551,9 @@ function CaptionPanel({
               {isOwner && onFeaturedToggle && (
                 <IconAction
                   onClick={() => onFeaturedToggle(image.id)}
-                  ariaLabel={image.featured ? "Unpin as featured" : "Pin as featured"}
+                  ariaLabel={
+                    image.featured ? "Unpin as featured" : "Pin as featured"
+                  }
                   active={!!image.featured}
                 >
                   <IconPin filled={!!image.featured} className="h-4 w-4" />
@@ -519,8 +607,8 @@ function IconAction({
   const tone = primary
     ? "bg-tracksuit-red text-cream hover:bg-tracksuit-red/90"
     : active
-    ? "bg-tracksuit-red text-cream"
-    : "text-inkstain hover:bg-submarine-yellow/40";
+      ? "bg-tracksuit-red text-cream"
+      : "text-inkstain hover:bg-submarine-yellow/40";
   return (
     <button
       onClick={onClick}

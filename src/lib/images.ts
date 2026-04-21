@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { writeFile, mkdir, unlink, readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+import sharp from 'sharp';
 
 const UPLOAD_DIR = './uploads';
 
@@ -33,10 +34,7 @@ export async function uploadImage(file: File): Promise<ImageMeta> {
   const filename = `${id}${ext}`;
   const filepath = path.join(UPLOAD_DIR, filename);
 
-  // Get basic image info without sharp for now
-  // In production, we'd use sharp for proper metadata extraction
-  const width = 800;
-  const height = 600;
+  const { width, height } = await readImageDimensions(buffer, file.type);
 
   // Save original file
   await writeFile(filepath, buffer);
@@ -60,6 +58,20 @@ export async function uploadImage(file: File): Promise<ImageMeta> {
   });
 
   return imageMeta;
+}
+
+export async function readImageDimensions(
+  buffer: Buffer,
+  mimeType?: string
+): Promise<{ width: number; height: number }> {
+  if (mimeType?.startsWith('video/')) {
+    return { width: 0, height: 0 };
+  }
+  const meta = await sharp(buffer).metadata();
+  const rotated = meta.orientation && meta.orientation >= 5 && meta.orientation <= 8;
+  const w = meta.width ?? 0;
+  const h = meta.height ?? 0;
+  return rotated ? { width: h, height: w } : { width: w, height: h };
 }
 
 export async function getImageFile(filename: string): Promise<Buffer | null> {
