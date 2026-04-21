@@ -291,17 +291,6 @@ export function PostCard({
               onImageClick && ((img) => onImageClick(img as PostImage))
             }
           />
-          {(() => {
-            const featured =
-              post.images.find((img) => img.featured) || post.images[0];
-            return featured?.caption ? (
-              <div className="mt-2 bg-cream/60 zissou-border px-3 py-2">
-                <p className="zissou-mono text-xs text-inkstain italic leading-relaxed line-clamp-2">
-                  {featured.caption}
-                </p>
-              </div>
-            ) : null;
-          })()}
         </div>
       )}
 
