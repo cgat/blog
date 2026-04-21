@@ -7,7 +7,7 @@ A list of high level tasks that need to be worked on.
 - [x] register archiveofsmallthings.xyz. Setup SSL (let's encrypt) and make it all work with hetzner and Coolify
 - [] Ensure we have a easy database backup scheme
 - [x] Add anonymous post and photo likes.
-- [] Add the ability for anonymous users to comment on posts or photos. Comments can be public or private. Commenters can add a name of a max length of 30 characters.
+- [] Add the ability for anonymous users to comment on photos. Comments can be public or private. Commenters can add a name of a max length of 30 characters.
 - [x] Set max height of the photo viewer cotainer to be 98vh
 - [x] Sticky mobile nav header (scroll responsive header which responds the scroll direction)
 - [x] Add Tag cards to navigation sections.
@@ -26,3 +26,5 @@ A list of high level tasks that need to be worked on.
 - [] Add search functionality
 - [x] Add RSS indicator
 - [] Make the github repo private and that work with Coolify
+- [] Add ability to link to or share specific photos
+-

@@ -354,9 +354,22 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
   const viewerPost = viewerPostId
     ? posts.find((p) => p.id === viewerPostId)
     : null;
+  // Reorder images so the featured image (if any) appears first in the viewer,
+  // matching the order shown in the grid.
+  const viewerImages = viewerPost
+    ? (() => {
+        const featuredIdx = viewerPost.images.findIndex((img) => img.featured);
+        if (featuredIdx <= 0) return viewerPost.images;
+        const featured = viewerPost.images[featuredIdx];
+        return [
+          featured,
+          ...viewerPost.images.filter((img) => img.id !== featured.id),
+        ];
+      })()
+    : [];
   const viewerImageIndex =
     viewerPost && viewerImage
-      ? viewerPost.images.findIndex((img) => img.id === viewerImage.id)
+      ? viewerImages.findIndex((img) => img.id === viewerImage.id)
       : -1;
 
   const handleImageClick = (image: PostImage, post: Post) => {
@@ -489,11 +502,11 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
     <>
     {viewerImage && viewerPost && (
       <ImageViewer
-        images={viewerPost.images}
+        images={viewerImages}
         currentIndex={viewerImageIndex}
         isOwner={!!session}
         onClose={handleViewerClose}
-        onNavigate={(i) => setViewerImage(viewerPost.images[i])}
+        onNavigate={(i) => setViewerImage(viewerImages[i])}
         onLike={handleImageLike}
         onCaptionSave={handleCaptionSave}
         onFeaturedToggle={handleFeaturedToggle}
