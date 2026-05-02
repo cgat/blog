@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -11,6 +12,7 @@ interface NavItem {
   href: string;
   desc: string;
   authOnly?: boolean;
+  showActivityBadge?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -39,6 +41,14 @@ const NAV_ITEMS: NavItem[] = [
     desc: "A private clipping service — RSS subscriptions filed for the archivist alone",
     authOnly: true,
   },
+  {
+    emoji: "🔔",
+    label: "Activity",
+    href: "/activity",
+    desc: "The archivist's daily log — likes, comments, and guestbook signings",
+    authOnly: true,
+    showActivityBadge: true,
+  },
 ];
 
 interface NavCardsProps {
@@ -54,6 +64,25 @@ export function NavCards({
   const theme = useTheme();
   const { data: session } = useSession();
   const isThemedRoute = theme.id !== "default";
+  const [fetchedUnread, setFetchedUnread] = useState(0);
+  const shouldFetchUnread = !!session && pathname !== "/activity";
+
+  useEffect(() => {
+    if (!shouldFetchUnread) return;
+    let cancelled = false;
+    fetch("/api/activity/unread-count")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        setFetchedUnread(Number(data?.count) || 0);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldFetchUnread, pathname]);
+
+  const activityUnread = shouldFetchUnread ? fetchedUnread : 0;
 
   const visibleItems = NAV_ITEMS.filter(
     (item) => item.href !== pathname && (!item.authOnly || !!session),
@@ -95,30 +124,41 @@ export function NavCards({
         </Link>
       )}
 
-      {visibleItems.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={`bg-nav-card hover:bg-submarine-yellow/20 transition-none block ${
-            minimized
-              ? "zissou-border text-center"
-              : "zissou-border zissou-shadow px-3 py-2"
-          } ${horizontal ? "shrink-0 max-w-[235px]" : ""}`}
-        >
-          {minimized ? (
-            <span className="text-lg">{item.emoji}</span>
-          ) : (
-            <>
-              <span className="zissou-heading text-xs font-bold text-inkstain block">
-                {item.emoji} {item.label}
+      {visibleItems.map((item) => {
+        const showBadge = !!item.showActivityBadge && activityUnread > 0;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`relative bg-nav-card hover:bg-submarine-yellow/20 transition-none block ${
+              minimized
+                ? "zissou-border text-center"
+                : "zissou-border zissou-shadow px-3 py-2"
+            } ${horizontal ? "shrink-0 max-w-[235px]" : ""}`}
+          >
+            {showBadge && (
+              <span
+                aria-label={`${activityUnread} new`}
+                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-tracksuit-red text-white zissou-mono text-[10px] font-bold flex items-center justify-center zissou-border"
+              >
+                {activityUnread > 99 ? "99+" : activityUnread}
               </span>
-              <span className="zissou-mono text-[10px] text-inkstain/50 leading-tight block mt-1">
-                {item.desc}
-              </span>
-            </>
-          )}
-        </Link>
-      ))}
+            )}
+            {minimized ? (
+              <span className="text-lg">{item.emoji}</span>
+            ) : (
+              <>
+                <span className="zissou-heading text-xs font-bold text-inkstain block">
+                  {item.emoji} {item.label}
+                </span>
+                <span className="zissou-mono text-[10px] text-inkstain/50 leading-tight block mt-1">
+                  {item.desc}
+                </span>
+              </>
+            )}
+          </Link>
+        );
+      })}
 
       {/* RSS card — horizontal (mobile) only */}
       {horizontal && (

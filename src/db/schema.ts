@@ -172,3 +172,9 @@ export const feedItemsRelations = relations(feedItems, ({ one }) => ({
     references: [feeds.id],
   }),
 }));
+
+export const userState = sqliteTable('user_state', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+});
