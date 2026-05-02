@@ -2,9 +2,18 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
-const NAV_ITEMS = [
+interface NavItem {
+  emoji: string;
+  label: string;
+  href: string;
+  desc: string;
+  authOnly?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
   {
     emoji: "📬",
     label: "About",
@@ -23,6 +32,13 @@ const NAV_ITEMS = [
     href: "/thelittlepicture",
     desc: "A curated feed of small photographs and visual moments worth keeping",
   },
+  {
+    emoji: "📰",
+    label: "Reader",
+    href: "/reader",
+    desc: "A private clipping service — RSS subscriptions filed for the archivist alone",
+    authOnly: true,
+  },
 ];
 
 interface NavCardsProps {
@@ -36,9 +52,12 @@ export function NavCards({
 }: NavCardsProps) {
   const pathname = usePathname();
   const theme = useTheme();
+  const { data: session } = useSession();
   const isThemedRoute = theme.id !== "default";
 
-  const visibleItems = NAV_ITEMS.filter((item) => item.href !== pathname);
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => item.href !== pathname && (!item.authOnly || !!session),
+  );
 
   if (visibleItems.length === 0 && !isThemedRoute) return null;
 

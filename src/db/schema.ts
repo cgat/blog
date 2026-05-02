@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, uniqueIndex, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
 export const posts = sqliteTable('posts', {
@@ -135,3 +135,40 @@ export const guestbookEntries = sqliteTable('guestbook_entries', {
   isPrivate: integer('is_private', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });
+
+export const feeds = sqliteTable('feeds', {
+  id: text('id').primaryKey(),
+  url: text('url').notNull().unique(),
+  title: text('title').notNull(),
+  siteUrl: text('site_url'),
+  lastFetchedAt: integer('last_fetched_at', { mode: 'timestamp' }),
+  lastError: text('last_error'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});
+
+export const feedItems = sqliteTable('feed_items', {
+  id: text('id').primaryKey(),
+  feedId: text('feed_id').notNull().references(() => feeds.id, { onDelete: 'cascade' }),
+  guid: text('guid').notNull(),
+  url: text('url').notNull(),
+  title: text('title').notNull(),
+  summary: text('summary'),
+  author: text('author'),
+  publishedAt: integer('published_at', { mode: 'timestamp' }),
+  readAt: integer('read_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+}, (table) => [
+  uniqueIndex('feed_items_feed_guid_idx').on(table.feedId, table.guid),
+  index('feed_items_read_published_idx').on(table.readAt, table.publishedAt),
+]);
+
+export const feedsRelations = relations(feeds, ({ many }) => ({
+  items: many(feedItems),
+}));
+
+export const feedItemsRelations = relations(feedItems, ({ one }) => ({
+  feed: one(feeds, {
+    fields: [feedItems.feedId],
+    references: [feeds.id],
+  }),
+}));
