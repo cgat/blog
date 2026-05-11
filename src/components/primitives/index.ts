@@ -5,3 +5,5 @@ export { Chip } from './Chip';
 export { Avatar } from './Avatar';
 export { IconButton } from './IconButton';
 export { Toggle } from './Toggle';
+export { TagCombobox } from './TagCombobox';
+export type { TagOption } from './TagCombobox';

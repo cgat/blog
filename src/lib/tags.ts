@@ -1,12 +1,16 @@
 import { db } from '@/db';
-import { tags } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { tags, postTags } from '@/db/schema';
+import { eq, sql, desc, asc } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 
 export interface Tag {
   id: string;
   name: string;
   slug: string;
+}
+
+export interface TagWithUsage extends Tag {
+  count: number;
 }
 
 function slugify(text: string): string {
@@ -20,6 +24,22 @@ function slugify(text: string): string {
 
 export async function getAllTags(): Promise<Tag[]> {
   return db.select().from(tags);
+}
+
+export async function getAllTagsWithUsage(): Promise<TagWithUsage[]> {
+  const rows = await db
+    .select({
+      id: tags.id,
+      name: tags.name,
+      slug: tags.slug,
+      count: sql<number>`count(${postTags.tagId})`.as('count'),
+    })
+    .from(tags)
+    .leftJoin(postTags, eq(postTags.tagId, tags.id))
+    .groupBy(tags.id)
+    .orderBy(desc(sql`count`), asc(tags.name));
+
+  return rows.map((r) => ({ ...r, count: Number(r.count) }));
 }
 
 export async function createTag(name: string): Promise<Tag> {

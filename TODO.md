@@ -1,6 +1,6 @@
 A list of high level tasks that need to be worked on.
 
-- [] In the composer, we need a better tag adding UI component. Likely a searchable combobox. This isn't blog viewer facing, so lower priority
+- [x] In the composer, we need a better tag adding UI component. Likely a searchable combobox. This isn't blog viewer facing, so lower priority
 - [] Add a small delight element that is interlocked gears turning. This codepen example should be reference for implementation (https://codepen.io/LindsayMac/pen/MwrONL). If you can't access the code ask me to provide it. We'll use the 2 gear solution, though we'll have to figure out placement. In our case, I'd like this element to turn at the pace scrolling and when something is being fetched or a specific animation triggers it.
 - [x] Make the site themeable. Themes can be stored as code or json (we don't need a UI). Things that should be themable: site logo, site name that appears in header (e.g the archive of small things), the component used to render the site name that appears in the header, the color palette, the background colour, navigation card bg colour, post bg colour.
   - [x] Once the themability is in place, create a theme for "The Little Picture" tag. This includes generating a new logo (blocky wes anderson style camera). Palette is mostly blue tones.

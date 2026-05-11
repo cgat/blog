@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllTags, getOrCreateTag } from '@/lib/tags';
+import { getAllTagsWithUsage, getOrCreateTag } from '@/lib/tags';
 import { auth } from '@/auth';
 
 export async function GET() {
-  const tagsList = await getAllTags();
+  const tagsList = await getAllTagsWithUsage();
   return NextResponse.json(tagsList);
 }
 

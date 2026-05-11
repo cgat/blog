@@ -19,7 +19,12 @@ type Story = StoryObj<typeof Composer>;
 export const Default: Story = {
   args: {
     userName: 'John Doe',
-    existingTags: ['travel', 'photography', 'tech', 'thoughts'],
+    existingTags: [
+      { name: 'travel', count: 24 },
+      { name: 'photography', count: 18 },
+      { name: 'tech', count: 12 },
+      { name: 'thoughts', count: 9 },
+    ],
     onPublish: (data) => {
       console.log('Publishing:', data);
       alert(`Publishing:\n${JSON.stringify(data, null, 2)}`);
@@ -31,7 +36,10 @@ export const WithAvatar: Story = {
   args: {
     userAvatar: 'https://i.pravatar.cc/150?u=demo',
     userName: 'John Doe',
-    existingTags: ['travel', 'photography'],
+    existingTags: [
+      { name: 'travel', count: 24 },
+      { name: 'photography', count: 18 },
+    ],
     onPublish: (data) => console.log('Publishing:', data),
   },
 };
@@ -39,7 +47,7 @@ export const WithAvatar: Story = {
 export const Submitting: Story = {
   args: {
     userName: 'John Doe',
-    existingTags: ['travel'],
+    existingTags: [{ name: 'travel', count: 24 }],
     onPublish: () => {},
     isSubmitting: true,
   },
@@ -63,7 +71,11 @@ export const EmptyState: Story = {
 export const WithContentSources: Story = {
   args: {
     userName: 'John Doe',
-    existingTags: ['travel', 'photography', 'Movie Review'],
+    existingTags: [
+      { name: 'travel', count: 24 },
+      { name: 'photography', count: 18 },
+      { name: 'Movie Review', count: 6 },
+    ],
     onPublish: (data) => {
       console.log('Publishing:', data);
       alert(`Publishing:\n${JSON.stringify(data, null, 2)}`);

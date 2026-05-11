@@ -4,15 +4,18 @@ import { useState, useRef } from "react";
 import { Avatar } from "../primitives/Avatar";
 import { Button } from "../primitives/Button";
 import { Chip } from "../primitives/Chip";
+import { TagCombobox, type TagOption } from "../primitives/TagCombobox";
 import { Toggle } from "../primitives/Toggle";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { contentSources } from "@/lib/content-sources";
 import type { ContentSource, SearchResult } from "@/lib/content-sources";
 
+const FREQUENT_TAGS_LIMIT = 8;
+
 interface ComposerProps {
   userAvatar?: string;
   userName?: string;
-  existingTags?: string[];
+  existingTags?: TagOption[];
   onPublish: (data: {
     content: string;
     images: File[];
@@ -128,8 +131,6 @@ export function Composer({
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>(editPost?.tags ?? []);
   const [existingImages, setExistingImages] = useState(editPost?.images ?? []);
-  const [newTag, setNewTag] = useState("");
-  const [showTagInput, setShowTagInput] = useState(false);
   const [publishedAt, setPublishedAt] = useState(() => {
     if (!editPost?.publishedAt) return "";
     const d = new Date(editPost.publishedAt);
@@ -174,12 +175,14 @@ export function Composer({
     );
   };
 
-  const addNewTag = () => {
-    if (newTag && !selectedTags.includes(newTag)) {
-      setSelectedTags((prev) => [...prev, newTag]);
-      setNewTag("");
-      setShowTagInput(false);
-    }
+  const addTag = (tag: string) => {
+    const value = tag.trim();
+    if (!value) return;
+    setSelectedTags((prev) =>
+      prev.some((t) => t.toLowerCase() === value.toLowerCase())
+        ? prev
+        : [...prev, value],
+    );
   };
 
   const removeExistingImage = (imageId: string) => {
@@ -438,54 +441,43 @@ export function Composer({
 
       {/* Tags */}
       <div className="flex gap-2 flex-wrap items-center mb-4 ml-14">
-        {existingTags.map((tag) => (
-          <Chip
-            key={tag}
-            selected={selectedTags.includes(tag)}
-            onClick={() => toggleTag(tag)}
-          >
-            {tag}
-          </Chip>
-        ))}
-        {selectedTags
-          .filter((tag) => !existingTags.includes(tag))
-          .map((tag) => (
-            <Chip key={tag} selected removable onRemove={() => toggleTag(tag)}>
-              {tag}
-            </Chip>
-          ))}
-        {showTagInput ? (
-          <div className="flex gap-1 items-center">
-            <input
-              type="text"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addNewTag()}
-              placeholder="New tag"
-              className="px-2 py-1 zissou-mono text-sm border-0 border-b-2 border-dashed border-inkstain bg-transparent focus:outline-none focus:border-solid w-24"
-              autoFocus
-            />
-            <button
-              onClick={addNewTag}
-              className="zissou-mono text-xs uppercase text-deep-ocean-teal hover:text-tracksuit-red"
-            >
-              Add
-            </button>
-            <button
-              onClick={() => setShowTagInput(false)}
-              className="zissou-mono text-xs uppercase text-inkstain/40 hover:text-tracksuit-red"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setShowTagInput(true)}
-            className="zissou-mono text-xs uppercase text-deep-ocean-teal hover:text-tracksuit-red"
-          >
-            + Add tag
-          </button>
-        )}
+        {(() => {
+          const frequentTags = existingTags.slice(0, FREQUENT_TAGS_LIMIT);
+          const frequentNamesLower = new Set(
+            frequentTags.map((t) => t.name.toLowerCase()),
+          );
+          const extraSelected = selectedTags.filter(
+            (t) => !frequentNamesLower.has(t.toLowerCase()),
+          );
+          return (
+            <>
+              {frequentTags.map((tag) => (
+                <Chip
+                  key={tag.name}
+                  selected={selectedTags.includes(tag.name)}
+                  onClick={() => toggleTag(tag.name)}
+                >
+                  {tag.name}
+                </Chip>
+              ))}
+              {extraSelected.map((tag) => (
+                <Chip
+                  key={tag}
+                  selected
+                  removable
+                  onRemove={() => toggleTag(tag)}
+                >
+                  {tag}
+                </Chip>
+              ))}
+              <TagCombobox
+                allTags={existingTags}
+                selectedTags={selectedTags}
+                onAdd={addTag}
+              />
+            </>
+          );
+        })()}
       </div>
 
       {/* Actions */}

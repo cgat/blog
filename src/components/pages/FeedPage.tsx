@@ -9,7 +9,7 @@ import { ConfirmDialog } from "../composites/ConfirmDialog";
 
 import { ImageViewer } from "../composites/ImageViewer";
 import { CommentsPanel } from "../composites/CommentsPanel";
-import { Post, PostImage, PostTag } from "@/types/post";
+import { Post, PostImage } from "@/types/post";
 
 interface FeedPageProps {
   includePrivate?: boolean;
@@ -20,7 +20,7 @@ interface FeedPageProps {
 export function FeedPage({ includePrivate = false, initialTags = [], focusPostId }: FeedPageProps) {
   const { data: session } = useSession();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<{ name: string; count: number }[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialTags);
   const [hasNewer, setHasNewer] = useState(false);
   const [hasOlder, setHasOlder] = useState(false);
@@ -53,8 +53,8 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
 
   const fetchTags = async () => {
     const res = await fetch("/api/tags");
-    const data = await res.json();
-    setTags(data.map((t: PostTag) => t.name));
+    const data: { name: string; count: number }[] = await res.json();
+    setTags(data.map((t) => ({ name: t.name, count: t.count ?? 0 })));
   };
 
   useEffect(() => {
