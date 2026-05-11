@@ -16,5 +16,9 @@ if (!existsSync(dir)) {
 const sqlite = new Database(dbPath);
 export const db = drizzle(sqlite, { schema });
 
-// Run migrations automatically on startup
-migrate(db, { migrationsFolder: resolve(process.cwd(), 'drizzle') });
+// Run migrations automatically on startup. Skip during `next build` —
+// page-data-collection runs in parallel workers that would race on a
+// fresh build-container DB and fail with "table already exists".
+if (process.env.NEXT_PHASE !== 'phase-production-build') {
+  migrate(db, { migrationsFolder: resolve(process.cwd(), 'drizzle') });
+}
