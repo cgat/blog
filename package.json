@@ -11,7 +11,8 @@
     "build-storybook": "storybook build",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "mcp": "node --import tsx mcp/blog-server.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.0.0",
+    "@modelcontextprotocol/sdk": "^1.31.0",
     "@storybook/addon-a11y": "^10.2.3",
     "@storybook/addon-docs": "^10.2.3",
     "@storybook/addon-onboarding": "^10.2.3",
@@ -55,8 +57,10 @@
     "playwright": "^1.58.1",
     "storybook": "^10.2.3",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vite": "^7.3.1",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "zod": "^4.6.5"
   }
 }

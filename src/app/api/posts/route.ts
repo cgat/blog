@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createPost, getPosts, getPostsAround } from '@/lib/posts';
-import { auth } from '@/auth';
+import { isAuthorized } from '@/lib/api-auth';
 import { computeFingerprint } from '@/lib/likes';
 
 export async function GET(request: NextRequest) {
@@ -14,9 +14,9 @@ export async function GET(request: NextRequest) {
   const draftsOnly = searchParams.get('draftsOnly') === 'true';
 
   // Only honor includePrivate/draftsOnly when authenticated
-  const session = (includePrivateParam || draftsOnly) ? await auth() : null;
-  const includePrivate = includePrivateParam && !!session;
-  const showDrafts = draftsOnly && !!session;
+  const authorized = (includePrivateParam || draftsOnly) && await isAuthorized(request);
+  const includePrivate = includePrivateParam && authorized;
+  const showDrafts = draftsOnly && authorized;
 
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
   const userAgent = request.headers.get('user-agent') || 'unknown';
@@ -46,9 +46,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
-
-  if (!session) {
+  if (!(await isAuthorized(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -62,6 +60,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const post = await createPost({ content: content || '', tagIds, isPrivate: !!isPrivate, isDraft: !!isDraft }, imageIds || []);
+  const createdAt = body.createdAt ? new Date(body.createdAt) : undefined;
+  if (createdAt && isNaN(createdAt.getTime())) {
+    return NextResponse.json({ error: 'Invalid createdAt' }, { status: 400 });
+  }
+
+  const post = await createPost({ content: content || '', tagIds, isPrivate: !!isPrivate, isDraft: !!isDraft, createdAt }, imageIds || []);
   return NextResponse.json(post, { status: 201 });
 }

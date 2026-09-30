@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllTagsWithUsage, getOrCreateTag } from '@/lib/tags';
-import { auth } from '@/auth';
+import { isAuthorized } from '@/lib/api-auth';
 
 export async function GET() {
   const tagsList = await getAllTagsWithUsage();
@@ -8,9 +8,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
-
-  if (!session) {
+  if (!(await isAuthorized(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

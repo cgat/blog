@@ -25,7 +25,7 @@ async function ensureUploadDir() {
   }
 }
 
-export async function uploadImage(file: File): Promise<ImageMeta> {
+export async function uploadImage(file: File, options?: { caption?: string }): Promise<ImageMeta> {
   await ensureUploadDir();
 
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -54,6 +54,7 @@ export async function uploadImage(file: File): Promise<ImageMeta> {
     ...imageMeta,
     postId: null, // Will be updated when post is created
     position: 0,
+    caption: options?.caption || null,
     createdAt: new Date(),
   });
 

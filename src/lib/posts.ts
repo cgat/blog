@@ -11,6 +11,8 @@ export interface CreatePostInput {
   tagIds?: string[];
   isPrivate?: boolean;
   isDraft?: boolean;
+  // Backdates the post (e.g. when importing from another platform). Defaults to now.
+  createdAt?: Date;
 }
 
 export interface PostWithRelations {
@@ -46,15 +48,16 @@ export interface PostWithRelations {
 export async function createPost(input: CreatePostInput, imageIds: string[] = []): Promise<PostWithRelations> {
   const id = uuid();
   const now = new Date();
+  const createdAt = input.createdAt ?? now;
   const type = imageIds.length > 0 ? 'photo' : 'text';
 
   await db.insert(posts).values({
     id,
     content: input.content,
     type,
-    createdAt: now,
+    createdAt,
     updatedAt: now,
-    publishedAt: input.isDraft ? null : now,
+    publishedAt: input.isDraft ? null : createdAt,
     isPrivate: input.isPrivate ?? false,
   });
 
@@ -385,7 +388,7 @@ export async function getPostsAround(postId: string, options: {
   };
 }
 
-export async function updatePost(id: string, input: Partial<CreatePostInput> & { publish?: boolean; imageIds?: string[]; publishedAt?: string }): Promise<PostWithRelations | null> {
+export async function updatePost(id: string, input: Partial<Omit<CreatePostInput, 'createdAt'>> & { publish?: boolean; imageIds?: string[]; publishedAt?: string; createdAt?: string }): Promise<PostWithRelations | null> {
   const existing = await getPost(id, { includePrivate: true, includeDrafts: true });
   if (!existing) return null;
 
@@ -394,6 +397,7 @@ export async function updatePost(id: string, input: Partial<CreatePostInput> & {
   if (input.isPrivate !== undefined) updateFields.isPrivate = input.isPrivate;
   if (input.publish) updateFields.publishedAt = new Date();
   if (input.publishedAt) updateFields.publishedAt = new Date(input.publishedAt);
+  if (input.createdAt) updateFields.createdAt = new Date(input.createdAt);
 
   // Update post type based on images
   if (input.imageIds !== undefined) {

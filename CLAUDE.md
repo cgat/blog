@@ -37,6 +37,7 @@ src/
 │   └── schema.ts          # Drizzle schema definitions
 ├── lib/                   # Business logic
 │   ├── auth.ts            # Auth utilities
+│   ├── api-auth.ts        # isAuthorized(): session or BLOG_API_TOKEN bearer
 │   ├── content-sources.ts # Content source definitions (Movie, Book, etc.)
 │   ├── images.ts          # Image processing
 │   ├── link-previews.ts   # OG/Twitter scraping, URL extraction, DB ops
@@ -44,6 +45,8 @@ src/
 │   └── tags.ts            # Tag operations
 ├── types/                 # TypeScript type definitions
 └── auth.ts                # NextAuth configuration
+mcp/
+└── blog-server.mts        # Local stdio MCP server for managing content (see "MCP Server")
 ```
 
 ## Key Commands
@@ -56,6 +59,7 @@ npm run db:generate  # Generate Drizzle migrations
 npm run db:migrate   # Apply migrations
 npm run db:studio    # Open Drizzle Studio
 npm run lint         # Run ESLint
+npm run mcp          # Run the MCP server on stdio (normally launched by Claude Code via .mcp.json)
 ```
 
 ## Database
@@ -80,7 +84,19 @@ AUTH_SECRET=             # Generate with: openssl rand -base64 32
 NEXTAUTH_URL=            # http://localhost:3000 for local dev
 ALLOWED_EMAIL=           # Your email (only this user can post)
 ANTHROPIC_API_KEY=       # Anthropic API key (for content search via Claude web search)
+BLOG_API_TOKEN=          # Bearer token for API/MCP writes. Generate with: openssl rand -hex 32
+BLOG_URL=                # MCP server target (optional, defaults to http://localhost:3000)
 ```
+
+## MCP Server
+
+`mcp/blog-server.mts` is a local stdio MCP server, registered in `.mcp.json` as `blog`. It calls the site's HTTP API (not the DB), so it can target local dev or production via `BLOG_URL`. It reads image files from local disk by path, which keeps bulk imports (e.g. Google Takeout, Facebook exports) from passing image bytes through the model.
+
+- **Tools**: `create_post`, `update_post`, `delete_post`, `get_post`, `list_posts`, `list_tags`, `upload_image`, `set_image_caption`, `set_featured_image`
+- **Auth**: Sends `Authorization: Bearer $BLOG_API_TOKEN`. Routes check `isAuthorized()` in `src/lib/api-auth.ts`, which accepts the bearer token or the owner's session. The token must match `BLOG_API_TOKEN` on the target server (set it in Coolify for prod).
+- **Config**: Loaded from `.env.local`; shell env overrides it. To target prod, set `BLOG_URL=https://archiveofsmallthings.xyz`.
+- **Backdating**: `createdAt` on create/update sets the post date. The feed sorts and displays by `createdAt`.
+- **File types**: jpg, png, gif, webp, mp4, webm, mov. HEIC isn't supported (browsers other than Safari can't display it), so convert first.
 
 ## Design Decisions
 

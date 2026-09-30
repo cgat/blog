@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadImage } from '@/lib/images';
-import { auth } from '@/auth';
+import { isAuthorized } from '@/lib/api-auth';
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
-
-  if (!session) {
+  if (!(await isAuthorized(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const formData = await request.formData();
   const file = formData.get('file') as File;
+  const caption = formData.get('caption');
 
   if (!file) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -20,6 +19,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'File must be an image or video' }, { status: 400 });
   }
 
-  const imageMeta = await uploadImage(file);
+  const imageMeta = await uploadImage(file, {
+    caption: typeof caption === 'string' ? caption : undefined,
+  });
   return NextResponse.json(imageMeta, { status: 201 });
 }

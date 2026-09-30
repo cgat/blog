@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "blog": {
+      "command": "node",
+      "args": ["--import", "tsx", "mcp/blog-server.mts"]
+    }
+  }
+}
