@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-interface ImageItem {
+export interface ImageItem {
   id: string;
   url: string;
   alt?: string;
@@ -15,11 +15,13 @@ function isVideo(item: ImageItem) {
   return item.mimeType?.startsWith('video/');
 }
 
-function MediaThumb({ item, alt, fill, className, sizes }: { item: ImageItem; alt: string; fill?: boolean; className?: string; sizes?: string }) {
+export function MediaThumb({ item, alt, fill, className, sizes }: { item: ImageItem; alt: string; fill?: boolean; className?: string; sizes?: string }) {
   if (isVideo(item)) {
     return (
       <video
         src={item.url}
+        width={item.width}
+        height={item.height}
         muted
         loop
         playsInline
@@ -38,7 +40,7 @@ function MediaThumb({ item, alt, fill, className, sizes }: { item: ImageItem; al
 
 const GRID_CELL_SIZES = '(max-width: 768px) 24vw, 220px';
 
-function CaptionIndicator() {
+export function CaptionIndicator() {
   return (
     <div className="absolute bottom-1 right-1 rounded-sm bg-inkstain/40 px-1 py-0.5 backdrop-blur-sm">
       <svg className="w-3 h-3 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -65,6 +67,7 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
     return (
       <div
         className="relative overflow-hidden zissou-border cursor-pointer"
+        data-media-id={img.id}
         onClick={() => onImageClick?.(img)}
       >
         <MediaThumb item={img} alt={img.alt || 'Post image'} className="w-full h-auto" />
@@ -99,7 +102,8 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
         {/* Featured image — portrait, left side, no crop */}
         <div
           className="relative h-full shrink-0 zissou-border overflow-hidden cursor-pointer"
-          onClick={() => onImageClick?.(featured)}
+          data-media-id={featured.id}
+        onClick={() => onImageClick?.(featured)}
         >
           <MediaThumb item={featured} alt={featured.alt || 'Featured image'} className="h-full w-auto" />
           {featured.caption && <CaptionIndicator />}
@@ -118,7 +122,8 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
             <div
               key={img.id}
               className="relative zissou-border overflow-hidden cursor-pointer"
-              onClick={() => onImageClick?.(img)}
+              data-media-id={img.id}
+        onClick={() => onImageClick?.(img)}
             >
               <MediaThumb item={img} alt={img.alt || `Image ${index + 2}`} fill className="object-cover" sizes={GRID_CELL_SIZES} />
               {img.caption && <CaptionIndicator />}
@@ -148,6 +153,7 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
       {/* Featured image — landscape, full width, no crop */}
       <div
         className="relative zissou-border overflow-hidden cursor-pointer"
+        data-media-id={featured.id}
         onClick={() => onImageClick?.(featured)}
       >
         <MediaThumb item={featured} alt={featured.alt || 'Featured image'} className="w-full h-auto" />
@@ -166,7 +172,8 @@ export function ImageGrid({ images, expanded = false, onImageClick }: ImageGridP
             <div
               key={img.id}
               className="relative zissou-border aspect-square overflow-hidden cursor-pointer"
-              onClick={() => onImageClick?.(img)}
+              data-media-id={img.id}
+        onClick={() => onImageClick?.(img)}
             >
               <MediaThumb item={img} alt={img.alt || `Image ${index + 2}`} fill className="object-cover" sizes={GRID_CELL_SIZES} />
               {img.caption && <CaptionIndicator />}

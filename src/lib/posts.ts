@@ -5,12 +5,15 @@ import { v4 as uuid } from 'uuid';
 import { extractBareUrls, getLinkPreviewsForUrls, processPostLinkPreviews } from '@/lib/link-previews';
 import { getLikeCount, getLikeCounts, getLikedPostIds, getImageLikeCounts, getLikedImageIds } from '@/lib/likes';
 import { getCommentCount, getCommentCounts } from '@/lib/comments';
+import type { MediaLayout } from '@/lib/media-layout';
 
 export interface CreatePostInput {
   content: string;
   tagIds?: string[];
   isPrivate?: boolean;
   isDraft?: boolean;
+  // How the post's photos/videos are arranged in the feed. Defaults to 'auto'.
+  mediaLayout?: MediaLayout;
   // Backdates the post (e.g. when importing from another platform). Defaults to now.
   createdAt?: Date;
 }
@@ -20,6 +23,7 @@ export interface PostWithRelations {
   content: string;
   type: 'text' | 'photo';
   isPrivate: boolean;
+  mediaLayout: MediaLayout;
   likeCount: number;
   likedByMe: boolean;
   commentCount: number;
@@ -59,6 +63,7 @@ export async function createPost(input: CreatePostInput, imageIds: string[] = []
     updatedAt: now,
     publishedAt: input.isDraft ? null : createdAt,
     isPrivate: input.isPrivate ?? false,
+    ...(input.mediaLayout && { mediaLayout: input.mediaLayout }),
   });
 
   // Link tags
@@ -132,6 +137,7 @@ export async function getPost(id: string, options?: { includePrivate?: boolean; 
     content: result.content,
     type: result.type,
     isPrivate: result.isPrivate,
+    mediaLayout: result.mediaLayout,
     likeCount,
     likedByMe,
     commentCount,
@@ -252,6 +258,7 @@ export async function getPosts(options: {
         content: result.content,
         type: result.type,
         isPrivate: result.isPrivate,
+        mediaLayout: result.mediaLayout,
         likeCount: likeCounts[result.id] || 0,
         likedByMe: likedIds.has(result.id),
         commentCount: commentCounts[result.id] || 0,
@@ -358,6 +365,7 @@ export async function getPostsAround(postId: string, options: {
         content: result.content,
         type: result.type,
         isPrivate: result.isPrivate,
+        mediaLayout: result.mediaLayout,
         likeCount: likeCounts[result.id] || 0,
         likedByMe: likedIds.has(result.id),
         commentCount: commentCounts[result.id] || 0,
@@ -395,6 +403,7 @@ export async function updatePost(id: string, input: Partial<Omit<CreatePostInput
   const updateFields: Record<string, unknown> = { updatedAt: new Date() };
   if (input.content !== undefined) updateFields.content = input.content;
   if (input.isPrivate !== undefined) updateFields.isPrivate = input.isPrivate;
+  if (input.mediaLayout !== undefined) updateFields.mediaLayout = input.mediaLayout;
   if (input.publish) updateFields.publishedAt = new Date();
   if (input.publishedAt) updateFields.publishedAt = new Date(input.publishedAt);
   if (input.createdAt) updateFields.createdAt = new Date(input.createdAt);

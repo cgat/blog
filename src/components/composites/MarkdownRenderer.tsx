@@ -12,7 +12,9 @@ interface MarkdownRendererProps {
   linkPreviews?: Record<string, LinkPreviewData>;
 }
 
-export function MarkdownRenderer({
+// Memoised: parsing markdown is the expensive part of a post, and the feed
+// re-renders every post whenever the image viewer opens, closes or navigates.
+export const MarkdownRenderer = React.memo(function MarkdownRenderer({
   content,
   truncate,
   linkPreviews,
@@ -77,4 +79,4 @@ export function MarkdownRenderer({
       </ReactMarkdown>
     </div>
   );
-}
+});

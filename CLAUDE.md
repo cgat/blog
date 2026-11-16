@@ -65,7 +65,7 @@ npm run mcp          # Run the MCP server on stdio (normally launched by Claude 
 ## Database
 
 SQLite database stored at `data/blog.db`. Schema:
-- **posts**: id, content (markdown), type (text/photo), timestamps
+- **posts**: id, content (markdown), type (text/photo), mediaLayout, timestamps
 - **images**: id, postId (nullable), filename, dimensions, metadata
 - **tags**: id, name, slug
 - **post_tags**: many-to-many join table
@@ -95,6 +95,7 @@ BLOG_URL=                # MCP server target (optional, defaults to http://local
 - **Tools**: `create_post`, `update_post`, `delete_post`, `get_post`, `list_posts`, `list_tags`, `upload_image`, `set_image_caption`, `set_featured_image`
 - **Auth**: Sends `Authorization: Bearer $BLOG_API_TOKEN`. Routes check `isAuthorized()` in `src/lib/api-auth.ts`, which accepts the bearer token or the owner's session. The token must match `BLOG_API_TOKEN` on the target server (set it in Coolify for prod).
 - **Config**: Loaded from `.env.local`; shell env overrides it. To target prod, set `BLOG_URL=https://archiveofsmallthings.xyz`.
+- **Media layout**: `mediaLayout` on `create_post`/`update_post` picks how a post's photos/videos are arranged (see "Media layouts").
 - **Backdating**: `createdAt` on create/update sets the post date. The feed sorts and displays by `createdAt`.
 - **File types**: jpg, png, gif, webp, mp4, webm, mov. HEIC isn't supported (browsers other than Safari can't display it), so convert first.
 
@@ -104,6 +105,7 @@ BLOG_URL=                # MCP server target (optional, defaults to http://local
 - **Storybook-first**: All components have stories. Run Storybook to develop/test components in isolation.
 - **Single user**: Only one authorized email can create/edit/delete posts. Everyone else can view.
 - **Local storage**: Images stored on filesystem, not cloud. Simple self-hosted setup.
+- **Media layouts**: Each post stores a `mediaLayout` (`auto`, `showcase`, `masonry`, `filmstrip`, `slides`, `stack`), picked in the Composer once media is attached. The list lives in `src/lib/media-layout.ts`; `MediaGallery` renders the chosen variant (`auto` is the original `ImageGrid`). To add one: add it to `MEDIA_LAYOUTS` + `MEDIA_LAYOUT_INFO`, add a case in `MediaGallery`, a glyph in `MediaLayoutPicker`, and run `npm run db:generate` if drizzle reports a change. Every clickable thumbnail must carry `data-media-id` — `ImageViewer` uses it to animate out of and back into the thumbnail.
 - **Link previews**: Bare URLs on their own line in post content are scraped for OG/Twitter metadata at publish time (using cheerio) and rendered as rich preview cards inline. Data stored in `link_previews` table, keyed by URL. The `MarkdownRenderer` detects bare-URL paragraphs via the `p` component override in react-markdown and replaces them with `LinkPreview` cards.
 - **Content sources**: Extensible system for searching external sites via Claude web search. Sources defined in `src/lib/content-sources.ts` as a simple array (id, label, tag, site). Search powered by Anthropic API with `web_search_20250305` tool, scoped to each source's domain via `allowed_domains`. The Composer renders a toolbar button per source. Search results shown in a dropdown; selecting one prepends the URL to post content and auto-tags the post. To add a new source: add entry to `contentSources` array with the target `site` domain.
 

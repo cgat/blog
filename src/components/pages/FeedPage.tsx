@@ -10,6 +10,7 @@ import { ConfirmDialog } from "../composites/ConfirmDialog";
 import { ImageViewer } from "../composites/ImageViewer";
 import { CommentsPanel } from "../composites/CommentsPanel";
 import { Post, PostImage } from "@/types/post";
+import { orderMedia, type MediaLayout } from "@/lib/media-layout";
 
 interface FeedPageProps {
   includePrivate?: boolean;
@@ -112,6 +113,7 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
     tags: string[];
     isPrivate: boolean;
     isDraft?: boolean;
+    mediaLayout: MediaLayout;
   }) => {
     setIsSubmitting(true);
 
@@ -148,6 +150,7 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
           tagIds,
           isPrivate: data.isPrivate,
           isDraft: data.isDraft,
+          mediaLayout: data.mediaLayout,
         }),
       });
 
@@ -188,6 +191,7 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
     existingImageIds: string[];
     tags: string[];
     isPrivate: boolean;
+    mediaLayout: MediaLayout;
     publish?: boolean;
     publishedAt?: string;
   }) => {
@@ -225,6 +229,7 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
           tagIds,
           imageIds: allImageIds,
           isPrivate: data.isPrivate,
+          mediaLayout: data.mediaLayout,
           publish: data.publish,
           publishedAt: data.publishedAt,
         }),
@@ -354,19 +359,8 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
   const viewerPost = viewerPostId
     ? posts.find((p) => p.id === viewerPostId)
     : null;
-  // Reorder images so the featured image (if any) appears first in the viewer,
-  // matching the order shown in the grid.
-  const viewerImages = viewerPost
-    ? (() => {
-        const featuredIdx = viewerPost.images.findIndex((img) => img.featured);
-        if (featuredIdx <= 0) return viewerPost.images;
-        const featured = viewerPost.images[featuredIdx];
-        return [
-          featured,
-          ...viewerPost.images.filter((img) => img.id !== featured.id),
-        ];
-      })()
-    : [];
+  // Featured image first, matching the order every media layout displays.
+  const viewerImages = viewerPost ? orderMedia(viewerPost.images) : [];
   const viewerImageIndex =
     viewerPost && viewerImage
       ? viewerImages.findIndex((img) => img.id === viewerImage.id)
@@ -565,6 +559,7 @@ export function FeedPage({ includePrivate = false, initialTags = [], focusPostId
                 content: post.content,
                 tags: post.tags.map((t) => t.name),
                 isPrivate: post.isPrivate,
+                mediaLayout: post.mediaLayout,
                 images: post.images.map((img) => ({ id: img.id, url: img.url, mimeType: img.mimeType })),
                 isDraft: !post.publishedAt,
                 publishedAt: post.publishedAt,

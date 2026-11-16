@@ -3,7 +3,7 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Post, PostImage } from "@/types/post";
 import { MarkdownRenderer } from "./MarkdownRenderer";
-import { ImageGrid } from "./ImageGrid";
+import { MediaGallery } from "./MediaGallery";
 import { ShareMenu } from "./ShareMenu";
 import { Chip } from "../primitives/Chip";
 import { IconButton } from "../primitives/IconButton";
@@ -284,9 +284,9 @@ export function PostCard({
       {/* Images */}
       {post.images.length > 0 && (
         <div className="mb-4">
-          <ImageGrid
+          <MediaGallery
             images={post.images}
-            expanded
+            layout={post.mediaLayout}
             onImageClick={
               onImageClick && ((img) => onImageClick(img as PostImage))
             }

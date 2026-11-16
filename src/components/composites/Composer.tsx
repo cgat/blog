@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import { Avatar } from "../primitives/Avatar";
 import { Button } from "../primitives/Button";
 import { Chip } from "../primitives/Chip";
 import { TagCombobox, type TagOption } from "../primitives/TagCombobox";
 import { Toggle } from "../primitives/Toggle";
 import { MarkdownEditor } from "./MarkdownEditor";
+import { MediaLayoutPicker } from "./MediaLayoutPicker";
+import { DEFAULT_MEDIA_LAYOUT, type MediaLayout } from "@/lib/media-layout";
 import { contentSources } from "@/lib/content-sources";
 import type { ContentSource, SearchResult } from "@/lib/content-sources";
 
@@ -22,6 +25,7 @@ interface ComposerProps {
     tags: string[];
     isPrivate: boolean;
     isDraft?: boolean;
+    mediaLayout: MediaLayout;
   }) => void | Promise<void>;
   isSubmitting?: boolean;
   // Edit mode props
@@ -30,6 +34,7 @@ interface ComposerProps {
     content: string;
     tags: string[];
     isPrivate: boolean;
+    mediaLayout?: MediaLayout;
     images: { id: string; url: string; mimeType?: string }[];
     isDraft: boolean;
     publishedAt?: Date | null;
@@ -40,6 +45,7 @@ interface ComposerProps {
     existingImageIds: string[];
     tags: string[];
     isPrivate: boolean;
+    mediaLayout: MediaLayout;
     publish?: boolean;
     publishedAt?: string;
   }) => void | Promise<void>;
@@ -131,6 +137,9 @@ export function Composer({
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>(editPost?.tags ?? []);
   const [existingImages, setExistingImages] = useState(editPost?.images ?? []);
+  const [mediaLayout, setMediaLayout] = useState<MediaLayout>(
+    editPost?.mediaLayout ?? DEFAULT_MEDIA_LAYOUT,
+  );
   const [publishedAt, setPublishedAt] = useState(() => {
     if (!editPost?.publishedAt) return "";
     const d = new Date(editPost.publishedAt);
@@ -191,13 +200,14 @@ export function Composer({
 
   const handleSubmit = async (isDraft?: boolean) => {
     if (!content.trim() && images.length === 0) return;
-    await onPublish({ content, images, tags: selectedTags, isPrivate, isDraft });
+    await onPublish({ content, images, tags: selectedTags, isPrivate, isDraft, mediaLayout });
     setContent("");
     setIsPrivate(false);
     setImages([]);
     setImagePreviews([]);
     setSelectedTags([]);
     setExistingImages([]);
+    setMediaLayout(DEFAULT_MEDIA_LAYOUT);
     setActiveSource(null);
     setSearchQuery("");
     setSearchResults([]);
@@ -212,6 +222,7 @@ export function Composer({
       existingImageIds: existingImages.map((img) => img.id),
       tags: selectedTags,
       isPrivate,
+      mediaLayout,
       publish,
       publishedAt: publishedAt || undefined,
     });
@@ -301,9 +312,10 @@ export function Composer({
           {existingImages.map((img) => (
             <div key={img.id} className="relative w-20 h-20">
               {img.mimeType?.startsWith('video/') ? (
-                <video src={img.url} className="w-full h-full object-cover zissou-border" muted />
+                <video src={img.url} className="w-full h-full object-cover zissou-border" muted preload="metadata" />
               ) : (
-                <img src={img.url} alt="" className="w-full h-full object-cover zissou-border" />
+                // Resized thumbnail: the originals are multi-megabyte photos.
+                <Image src={img.url} alt="" width={80} height={80} sizes="80px" className="w-full h-full object-cover zissou-border" />
               )}
               <button
                 onClick={() => removeExistingImage(img.id)}
@@ -316,7 +328,7 @@ export function Composer({
           {imagePreviews.map((preview, index) => (
             <div key={index} className="relative w-20 h-20">
               {images[index]?.type.startsWith('video/') ? (
-                <video src={preview} className="w-full h-full object-cover zissou-border" muted />
+                <video src={preview} className="w-full h-full object-cover zissou-border" muted preload="metadata" />
               ) : (
                 <img
                   src={preview}
@@ -338,6 +350,13 @@ export function Composer({
           >
             +
           </button>
+        </div>
+      )}
+
+      {/* Media layout */}
+      {(existingImages.length > 0 || images.length > 0) && (
+        <div className="mb-4 ml-14">
+          <MediaLayoutPicker value={mediaLayout} onChange={setMediaLayout} />
         </div>
       )}
 

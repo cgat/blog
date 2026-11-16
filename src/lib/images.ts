@@ -85,6 +85,12 @@ export async function getImageFile(filename: string): Promise<Buffer | null> {
   return readFile(filepath);
 }
 
+// Path of an uploaded file on disk, or null if there is no such upload.
+export function getImageFilePath(filename: string): string | null {
+  const filepath = path.join(UPLOAD_DIR, path.basename(filename));
+  return existsSync(filepath) ? filepath : null;
+}
+
 export async function deleteImage(id: string): Promise<void> {
   const image = await db.select().from(images).where(eq(images.id, id));
 

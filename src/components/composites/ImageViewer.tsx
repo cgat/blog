@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { PostImage } from "@/types/post";
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useLayoutEffect, useCallback, useState, useRef } from "react";
+import { flushSync } from "react-dom";
 import useEmblaCarousel from "embla-carousel-react";
 
 interface ImageViewerProps {
@@ -23,33 +24,63 @@ function pad2(n: number) {
   return n < 10 ? `0${n}` : `${n}`;
 }
 
+// The already-loaded thumbnail for this image in the feed, if there is one.
+function thumbSrc(imageId: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const img = document.querySelector<HTMLImageElement>(
+    `[data-media-id="${CSS.escape(imageId)}"] img`,
+  );
+  return img?.currentSrc || undefined;
+}
+
 function Media({ image }: { image: PostImage }) {
-  if (isVideo(image)) {
-    return (
-      <video
-        src={image.url}
-        controls
-        playsInline
-        className="block"
-        style={{ maxHeight: "85vh", maxWidth: "min(90vw, 1400px)" }}
-      />
-    );
-  }
+  // Painted behind the full-size image so there is something to look at (and
+  // to animate) while the large version downloads and decodes.
+  const [placeholder] = useState(() => thumbSrc(image.id));
+  // An explicit box (rather than the media's intrinsic size) so the open/close
+  // transition can measure it before anything has loaded.
+  const box = {
+    aspectRatio: `${image.width} / ${image.height}`,
+    width: `min(90vw, 1400px, ${image.width}px, calc(85vh * ${image.width} / ${image.height}))`,
+  };
+  // Two layers so the open/close transition can run on transforms alone: the
+  // outer box clips, the inner one carries the picture.
   return (
     <div
-      className="relative"
-      style={{
-        aspectRatio: `${image.width} / ${image.height}`,
-        width: `min(90vw, 1400px, ${image.width}px, calc(85vh * ${image.width} / ${image.height}))`,
-      }}
+      data-viewer-media={image.id}
+      className="relative overflow-hidden"
+      style={box}
     >
-      <Image
-        src={image.url}
-        alt={image.alt || "Image"}
-        fill
-        sizes="(max-width: 768px) 90vw, min(90vw, 1400px)"
-        className="object-contain"
-      />
+      <div
+        data-viewer-media-inner
+        className="absolute inset-0"
+        style={
+          placeholder
+            ? {
+                backgroundImage: `url(${JSON.stringify(placeholder)})`,
+                backgroundSize: "100% 100%",
+              }
+            : undefined
+        }
+      >
+        {isVideo(image) ? (
+          <video
+            src={image.url}
+            controls
+            playsInline
+            preload="metadata"
+            className="block h-full w-full bg-inkstain"
+          />
+        ) : (
+          <Image
+            src={image.url}
+            alt={image.alt || "Image"}
+            fill
+            sizes="(max-width: 768px) 90vw, min(90vw, 1400px)"
+            className="object-contain"
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -179,6 +210,100 @@ function IconCheck({ className }: { className?: string }) {
   );
 }
 
+// ── Shared-element transition ──────────────────────────────────────────────
+// The viewer grows out of the thumbnail that was clicked and shrinks back into
+// it on close. Thumbnails are found by the `data-media-id` the feed layouts put
+// on every clickable frame.
+
+const OPEN_EASING = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+const CLOSE_EASING = "cubic-bezier(0.4, 0, 0.2, 1)";
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+// The thumbnail's on-screen box, or null if it isn't actually in sight
+// (scrolled off the page, or off the edge of its own carousel).
+function findThumbRect(imageId: string): DOMRect | null {
+  const el = document.querySelector<HTMLElement>(
+    `[data-media-id="${CSS.escape(imageId)}"]`,
+  );
+  if (!el) return null;
+  // The box inside the frame's border, which is where the picture actually
+  // sits. Using the outer box leaves the photo a border's width off at the
+  // moment it hands over to (or takes over from) the thumbnail.
+  const outer = el.getBoundingClientRect();
+  const rect = new DOMRect(
+    outer.left + el.clientLeft,
+    outer.top + el.clientTop,
+    el.clientWidth,
+    el.clientHeight,
+  );
+  if (rect.width === 0 || rect.height === 0) return null;
+
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  if (cx < 0 || cy < 0 || cx > window.innerWidth || cy > window.innerHeight) {
+    return null;
+  }
+  const clip = el.closest("[data-media-clip]")?.getBoundingClientRect();
+  if (clip && (cx < clip.left || cx > clip.right || cy < clip.top || cy > clip.bottom)) {
+    return null;
+  }
+  return rect;
+}
+
+// Keyframes taking the photo from the thumbnail's box to its resting place in
+// the centre of the stage, using transforms only so the whole thing runs on the
+// compositor (no per-frame repaint of a large image).
+//
+// The outer box stretches from the thumbnail's shape to the photo's shape and
+// clips; the inner layer counter-scales so the photo itself is only ever scaled
+// uniformly, starting at the thumbnail's cover-crop. The counter-scale isn't
+// linear, hence a run of keyframes rather than just a start and an end.
+const FRAME_STEPS = 24;
+
+function thumbToStageFrames(
+  media: HTMLElement,
+  thumb: DOMRect,
+  stage: DOMRect,
+): { outer: Keyframe[]; inner: Keyframe[] } | null {
+  const width = media.offsetWidth;
+  const height = media.offsetHeight;
+  if (!width || !height) return null;
+
+  const startX = thumb.width / width;
+  const startY = thumb.height / height;
+  const startCover = Math.max(startX, startY);
+  const dx = thumb.left + thumb.width / 2 - (stage.left + stage.width / 2);
+  const dy = thumb.top + thumb.height / 2 - (stage.top + stage.height / 2);
+
+  const outer: Keyframe[] = [];
+  const inner: Keyframe[] = [];
+  for (let i = 0; i <= FRAME_STEPS; i++) {
+    const t = i / FRAME_STEPS;
+    const sx = startX + (1 - startX) * t;
+    const sy = startY + (1 - startY) * t;
+    const cover = startCover + (1 - startCover) * t;
+    outer.push({
+      offset: t,
+      transform: `translate(${dx * (1 - t)}px, ${dy * (1 - t)}px) scale(${sx}, ${sy})`,
+    });
+    inner.push({ offset: t, transform: `scale(${cover / sx}, ${cover / sy})` });
+  }
+  return { outer, inner };
+}
+
+function reversed(frames: Keyframe[]): Keyframe[] {
+  return frames
+    .map((frame) => ({ ...frame, offset: 1 - (frame.offset as number) }))
+    .reverse();
+}
+
+function innerLayer(media: HTMLElement) {
+  return media.querySelector<HTMLElement>("[data-viewer-media-inner]");
+}
+
 export function ImageViewer({
   images,
   currentIndex,
@@ -205,6 +330,91 @@ export function ImageViewer({
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const closingRef = useRef(false);
+
+  const currentMedia = useCallback(
+    () =>
+      image
+        ? stageRef.current?.querySelector<HTMLElement>(
+            `[data-viewer-media="${CSS.escape(image.id)}"]`,
+          ) ?? null
+        : null,
+    [image],
+  );
+
+  // Open: fade the backdrop and controls in while the photo grows out of its
+  // thumbnail. Runs before first paint so there is no flash of the end state.
+  useLayoutEffect(() => {
+    const chrome = rootRef.current?.querySelectorAll("[data-viewer-chrome]") ?? [];
+    chrome.forEach((el) =>
+      el.animate([{ opacity: 0, offset: 0 }], { duration: 240, easing: "ease-out" }),
+    );
+
+    const media = currentMedia();
+    if (!media || !image) return;
+    const stage = stageRef.current?.getBoundingClientRect();
+    const thumb = prefersReducedMotion() ? null : findThumbRect(image.id);
+    const frames = thumb && stage ? thumbToStageFrames(media, thumb, stage) : null;
+
+    if (frames) {
+      const timing = { duration: 340, easing: OPEN_EASING };
+      media.animate(frames.outer, timing);
+      innerLayer(media)?.animate(frames.inner, timing);
+    } else {
+      media.animate([{ opacity: 0, offset: 0 }], { duration: 240, easing: "ease-out" });
+    }
+    // Mount-only: later image changes are embla's to animate.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Close: the reverse, back into wherever the current photo's thumbnail is now
+  // (the viewer may have been swiped to a different photo than it opened on).
+  // Falls back to a plain fade when that thumbnail isn't in sight.
+  const requestClose = useCallback(() => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+
+    const animations: Animation[] = [];
+    rootRef.current?.querySelectorAll("[data-viewer-chrome]").forEach((el) => {
+      animations.push(
+        el.animate([{ opacity: 0 }], { duration: 220, easing: "ease-in", fill: "forwards" }),
+      );
+    });
+
+    const media = currentMedia();
+    if (media && image) {
+      const stage = stageRef.current?.getBoundingClientRect();
+      const thumb = prefersReducedMotion() ? null : findThumbRect(image.id);
+      const frames = thumb && stage ? thumbToStageFrames(media, thumb, stage) : null;
+      if (frames) {
+        const timing = { duration: 300, easing: CLOSE_EASING, fill: "forwards" as const };
+        animations.push(media.animate(reversed(frames.outer), timing));
+        const inner = innerLayer(media)?.animate(reversed(frames.inner), timing);
+        if (inner) animations.push(inner);
+      } else {
+        animations.push(
+          media.animate([{ opacity: 0 }], {
+            duration: 180,
+            easing: "ease-in",
+            fill: "forwards",
+          }),
+        );
+      }
+    }
+
+    Promise.allSettled(animations.map((a) => a.finished)).then(() => {
+      // Unmount in the same frame the animation ends on. Left to React's
+      // normal scheduling, a frame could paint in between.
+      flushSync(onClose);
+      // If the parent kept the viewer mounted anyway, don't leave it faded out.
+      if (rootRef.current) {
+        animations.forEach((a) => a.cancel());
+        closingRef.current = false;
+      }
+    });
+  }, [currentMedia, image, onClose]);
 
   // Reset caption draft / edit mode when the viewed image changes
   useEffect(() => {
@@ -244,19 +454,24 @@ export function ImageViewer({
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (isEditing) return;
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestClose();
       else if (e.key === "ArrowLeft") goPrev();
       else if (e.key === "ArrowRight") goNext();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onClose, goPrev, goNext, isEditing]);
+  }, [requestClose, goPrev, goNext, isEditing]);
 
   useEffect(() => {
-    const original = document.body.style.overflow;
+    const { overflow, paddingRight } = document.body.style;
+    // Hiding the scrollbar widens the page; pad by the same amount so the feed
+    // underneath doesn't shift sideways while the viewer is open.
+    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
+    if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
     return () => {
-      document.body.style.overflow = original;
+      document.body.style.overflow = overflow;
+      document.body.style.paddingRight = paddingRight;
     };
   }, []);
 
@@ -295,13 +510,23 @@ export function ImageViewer({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-inkstain/85 backdrop-blur-sm"
-      onClick={onClose}
+      ref={rootRef}
+      className="fixed inset-0 z-50 flex flex-col"
+      onClick={requestClose}
       role="dialog"
       aria-modal="true"
     >
+      {/* Backdrop is its own layer so it can fade independently of the photo */}
+      <div
+        data-viewer-chrome
+        className="absolute inset-0 bg-inkstain/90"
+      />
+
       {!hasCaption && !isEditing && (
-        <div className="pointer-events-none absolute top-4 left-1/2 z-20 -translate-x-1/2">
+        <div
+          data-viewer-chrome
+          className="pointer-events-none absolute top-4 left-1/2 z-20 -translate-x-1/2"
+        >
           <span
             className="zissou-mono text-xs tracking-widest bg-cream text-inkstain zissou-border px-2.5 py-1"
             onClick={(e) => e.stopPropagation()}
@@ -312,9 +537,10 @@ export function ImageViewer({
       )}
 
       <button
+        data-viewer-chrome
         onClick={(e) => {
           e.stopPropagation();
-          onClose();
+          requestClose();
         }}
         className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-cream text-inkstain zissou-border hover:bg-submarine-yellow/40 transition-colors cursor-pointer"
         aria-label="Close viewer"
@@ -322,12 +548,14 @@ export function ImageViewer({
         <IconClose className="h-5 w-5" />
       </button>
 
-      {/* Stage — embla */}
+      {/* Stage — embla. Clipped horizontally only, so the photo can travel to
+          a thumbnail above or below the stage during the open/close transition. */}
       <div
-        className="relative flex flex-1 items-center overflow-hidden"
+        ref={stageRef}
+        className="relative flex min-h-0 flex-1 items-center overflow-x-clip"
         onClick={(e) => e.stopPropagation()}
       >
-        <div ref={emblaRef} className="h-full w-full overflow-hidden">
+        <div ref={emblaRef} className="h-full w-full overflow-x-clip">
           <div className="flex h-full touch-pan-y items-center">
             {images.map((img, i) => (
               <div
@@ -335,7 +563,9 @@ export function ImageViewer({
                 className="relative flex h-full min-w-0 shrink-0 grow-0 basis-full items-center justify-center px-[clamp(16px,2vw,32px)]"
                 aria-hidden={i !== currentIndex}
               >
-                <Media image={img} />
+                {/* Only the current photo and its neighbours are mounted, so
+                    opening a big post doesn't fetch and decode all of it. */}
+                {Math.abs(i - currentIndex) <= 1 && <Media image={img} />}
               </div>
             ))}
           </div>
@@ -343,6 +573,7 @@ export function ImageViewer({
 
         {/* Nav arrows — desktop only */}
         <button
+          data-viewer-chrome
           onClick={(e) => {
             e.stopPropagation();
             goPrev();
@@ -354,6 +585,7 @@ export function ImageViewer({
           <IconChevron direction="left" className="h-6 w-6" />
         </button>
         <button
+          data-viewer-chrome
           onClick={(e) => {
             e.stopPropagation();
             goNext();
@@ -368,6 +600,7 @@ export function ImageViewer({
 
       {/* Bottom: panel (caption or editing) or pill */}
       <div
+        data-viewer-chrome
         className="relative z-20 w-full"
         onClick={(e) => e.stopPropagation()}
       >

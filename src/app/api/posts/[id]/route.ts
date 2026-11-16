@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getPost, updatePost, deletePost } from '@/lib/posts';
 import { isAuthorized } from '@/lib/api-auth';
 import { computeFingerprint } from '@/lib/likes';
+import { isMediaLayout, MEDIA_LAYOUTS } from '@/lib/media-layout';
 
 export async function GET(
   request: NextRequest,
@@ -41,7 +42,14 @@ export async function PATCH(
     }
   }
 
-  const post = await updatePost(id, body);
+  if (body.mediaLayout != null && !isMediaLayout(body.mediaLayout)) {
+    return NextResponse.json(
+      { error: `Invalid mediaLayout. Expected one of: ${MEDIA_LAYOUTS.join(', ')}` },
+      { status: 400 }
+    );
+  }
+
+  const post = await updatePost(id, { ...body, mediaLayout: body.mediaLayout ?? undefined });
 
   if (!post) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });

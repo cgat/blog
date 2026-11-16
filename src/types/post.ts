@@ -1,3 +1,5 @@
+import type { MediaLayout } from '@/lib/media-layout';
+
 export interface PostImage {
   id: string;
   url: string;
@@ -33,6 +35,8 @@ export interface Post {
   tags: PostTag[];
   linkPreviews: Record<string, LinkPreviewData>;
   isPrivate: boolean;
+  // How the post's photos/videos are arranged. Absent means 'auto'.
+  mediaLayout?: MediaLayout;
   likeCount: number;
   likedByMe: boolean;
   commentCount: number;

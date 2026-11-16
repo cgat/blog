@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createPost, getPosts, getPostsAround } from '@/lib/posts';
 import { isAuthorized } from '@/lib/api-auth';
 import { computeFingerprint } from '@/lib/likes';
+import { isMediaLayout, MEDIA_LAYOUTS } from '@/lib/media-layout';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { content, tagIds, imageIds, isPrivate, isDraft } = body;
+  const { content, tagIds, imageIds, isPrivate, isDraft, mediaLayout } = body;
 
   if (!content?.trim() && (!imageIds || imageIds.length === 0)) {
     return NextResponse.json(
@@ -65,6 +66,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid createdAt' }, { status: 400 });
   }
 
-  const post = await createPost({ content: content || '', tagIds, isPrivate: !!isPrivate, isDraft: !!isDraft, createdAt }, imageIds || []);
+  if (mediaLayout != null && !isMediaLayout(mediaLayout)) {
+    return NextResponse.json(
+      { error: `Invalid mediaLayout. Expected one of: ${MEDIA_LAYOUTS.join(', ')}` },
+      { status: 400 }
+    );
+  }
+
+  const post = await createPost(
+    { content: content || '', tagIds, isPrivate: !!isPrivate, isDraft: !!isDraft, createdAt, mediaLayout: mediaLayout ?? undefined },
+    imageIds || []
+  );
   return NextResponse.json(post, { status: 201 });
 }

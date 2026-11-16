@@ -16,6 +16,7 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { z } from 'zod';
+import { MEDIA_LAYOUTS, MEDIA_LAYOUT_INFO } from '../src/lib/media-layout';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const envFile = path.join(repoRoot, '.env.local');
@@ -50,6 +51,7 @@ interface ApiPost {
   content: string;
   type: 'text' | 'photo';
   isPrivate: boolean;
+  mediaLayout: (typeof MEDIA_LAYOUTS)[number];
   createdAt: string;
   publishedAt: string | null;
   images: ApiImage[];
@@ -167,6 +169,7 @@ function summarizePost(post: ApiPost, options?: { truncate?: number }) {
     isDraft: !post.publishedAt,
     isPrivate: post.isPrivate,
     content,
+    mediaLayout: post.mediaLayout,
     tags: post.tags.map((t) => t.name),
     images: post.images.map((img) => ({
       id: img.id,
@@ -187,6 +190,13 @@ const isoDate = z
   .string()
   .refine((value) => !isNaN(new Date(value).getTime()), { message: 'Must be an ISO 8601 date' });
 
+const mediaLayoutSchema = z
+  .enum(MEDIA_LAYOUTS)
+  .describe(
+    'How the photos/videos are arranged. ' +
+      MEDIA_LAYOUTS.map((layout) => `${layout}: ${MEDIA_LAYOUT_INFO[layout].description}`).join(' ')
+  );
+
 const server = new McpServer({ name: 'blog', version: '0.1.0' });
 
 server.registerTool(
@@ -200,19 +210,21 @@ server.registerTool(
     inputSchema: {
       content: z.string().optional().describe('Markdown body. Optional if images are provided.'),
       images: z.array(imageRefSchema).optional(),
+      mediaLayout: mediaLayoutSchema.optional(),
       tags: z.array(z.string()).optional().describe('Tag names'),
       createdAt: isoDate.optional().describe('Post date (ISO 8601). Defaults to now.'),
       isPrivate: z.boolean().optional().describe('Only visible to the owner. Default false.'),
       isDraft: z.boolean().optional().describe('Save unpublished. Default false.'),
     },
   },
-  async ({ content, images, tags, createdAt, isPrivate, isDraft }) => {
+  async ({ content, images, mediaLayout, tags, createdAt, isPrivate, isDraft }) => {
     const imageIds = images ? await resolveImageIds(images) : [];
     const tagIds = tags ? await resolveTagIds(tags) : [];
 
     const post = await api<ApiPost>('POST', '/api/posts', {
       content: content ?? '',
       imageIds,
+      mediaLayout,
       tagIds,
       createdAt,
       isPrivate,
@@ -233,19 +245,21 @@ server.registerTool(
       id: z.string(),
       content: z.string().optional(),
       images: z.array(imageRefSchema).optional().describe('Full replacement list of images, in order'),
+      mediaLayout: mediaLayoutSchema.optional(),
       tags: z.array(z.string()).optional().describe('Full replacement list of tag names'),
       createdAt: isoDate.optional().describe('New post date (ISO 8601)'),
       isPrivate: z.boolean().optional(),
       publish: z.boolean().optional().describe('Publish a draft now'),
     },
   },
-  async ({ id, content, images, tags, createdAt, isPrivate, publish }) => {
+  async ({ id, content, images, mediaLayout, tags, createdAt, isPrivate, publish }) => {
     const imageIds = images ? await resolveImageIds(images) : undefined;
     const tagIds = tags ? await resolveTagIds(tags) : undefined;
 
     const post = await api<ApiPost>('PATCH', `/api/posts/${id}`, {
       content,
       imageIds,
+      mediaLayout,
       tagIds,
       createdAt,
       isPrivate,

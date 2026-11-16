@@ -1,5 +1,6 @@
 import { sqliteTable, text, integer, uniqueIndex, index } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
+import { MEDIA_LAYOUTS } from '../lib/media-layout';
 
 export const posts = sqliteTable('posts', {
   id: text('id').primaryKey(),
@@ -9,6 +10,7 @@ export const posts = sqliteTable('posts', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   publishedAt: integer('published_at', { mode: 'timestamp' }),
   isPrivate: integer('is_private', { mode: 'boolean' }).notNull().default(false),
+  mediaLayout: text('media_layout', { enum: MEDIA_LAYOUTS }).notNull().default('auto'),
 });
 
 export const images = sqliteTable('images', {
