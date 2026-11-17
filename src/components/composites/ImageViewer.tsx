@@ -553,7 +553,14 @@ export function ImageViewer({
       <div
         ref={stageRef}
         className="relative flex min-h-0 flex-1 items-center overflow-x-clip"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          // Clicks on the photo stay in the viewer; the empty space around it
+          // bubbles up and closes, like the rest of the overlay. (Embla
+          // swallows the click that ends a swipe, so dragging never closes.)
+          if ((e.target as HTMLElement).closest("[data-viewer-media]")) {
+            e.stopPropagation();
+          }
+        }}
       >
         <div ref={emblaRef} className="h-full w-full overflow-x-clip">
           <div className="flex h-full touch-pan-y items-center">
